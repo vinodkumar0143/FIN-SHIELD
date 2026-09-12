@@ -1,0 +1,160 @@
+export type UserRole = 'ADMIN' | 'FINANCE_MANAGER' | 'FINANCE_ANALYST' | 'EMPLOYEE'
+
+export type Permission =
+  | 'dashboard.view'
+  | 'invoices.view'
+  | 'invoices.create'
+  | 'invoices.edit'
+  | 'invoices.upload'
+  | 'invoices.delete'
+  | 'invoices.approve'
+  | 'transactions.view'
+  | 'vendors.view'
+  | 'vendors.manage'
+  | 'budgets.view'
+  | 'budgets.manage'
+  | 'investigations.view'
+  | 'investigations.create'
+  | 'investigations.manage'
+  | 'risk.view'
+  | 'forecasting.view'
+  | 'assistant.use'
+  | 'approvals.view'
+  | 'approvals.review'
+  | 'approvals.approve'
+  | 'workflows.view'
+  | 'workflows.manage'
+  | 'holds.view'
+  | 'holds.create'
+  | 'holds.release'
+  | 'escalations.view'
+  | 'escalations.manage'
+  | 'analytics.view'
+  | 'reports.view'
+  | 'reports.create'
+  | 'alerts.view'
+  | 'audit.view'
+  | 'users.view'
+  | 'users.manage'
+  | 'integrations.view'
+  | 'settings.view'
+  | 'settings.manage'
+
+export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
+  ADMIN: [
+    'dashboard.view',
+    'invoices.view',
+    'invoices.create',
+    'invoices.edit',
+    'invoices.upload',
+    'invoices.delete',
+    'invoices.approve',
+    'transactions.view',
+    'vendors.view',
+    'vendors.manage',
+    'budgets.view',
+    'budgets.manage',
+    'investigations.view',
+    'investigations.create',
+    'investigations.manage',
+    'risk.view',
+    'forecasting.view',
+    'assistant.use',
+    'approvals.view',
+    'approvals.review',
+    'approvals.approve',
+    'workflows.view',
+    'workflows.manage',
+    'holds.view',
+    'holds.create',
+    'holds.release',
+    'escalations.view',
+    'escalations.manage',
+    'analytics.view',
+    'reports.view',
+    'reports.create',
+    'alerts.view',
+    'audit.view',
+    'users.view',
+    'users.manage',
+    'integrations.view',
+    'settings.view',
+    'settings.manage'
+  ],
+
+  FINANCE_MANAGER: [
+    'dashboard.view',
+    'invoices.view',
+    'invoices.create',
+    'invoices.edit',
+    'invoices.upload',
+    'invoices.approve',
+    'transactions.view',
+    'vendors.view',
+    'vendors.manage',
+    'budgets.view',
+    'budgets.manage',
+    'investigations.view',
+    'investigations.create',
+    'investigations.manage',
+    'risk.view',
+    'forecasting.view',
+    'assistant.use',
+    'approvals.view',
+    'approvals.review',
+    'approvals.approve',
+    'workflows.view',
+    'workflows.manage',
+    'holds.view',
+    'holds.create',
+    'holds.release',
+    'escalations.view',
+    'escalations.manage',
+    'analytics.view',
+    'reports.view',
+    'reports.create',
+    'alerts.view',
+    'audit.view',
+    'integrations.view',
+    'settings.view'
+  ],
+
+  FINANCE_ANALYST: [
+    'dashboard.view',
+    'invoices.view',
+    'invoices.create',
+    'invoices.upload',
+    'transactions.view',
+    'vendors.view',
+    'budgets.view',
+    'investigations.view',
+    'investigations.create',
+    'risk.view',
+    'forecasting.view',
+    'assistant.use',
+    'approvals.view',
+    'workflows.view',
+    'holds.view',
+    'escalations.view',
+    'analytics.view',
+    'reports.view',
+    'reports.create',
+    'alerts.view'
+  ],
+
+  EMPLOYEE: [
+    'dashboard.view',
+    'invoices.view',
+    'invoices.create',
+    'invoices.upload',
+    'assistant.use',
+    'approvals.view',
+    'workflows.view'
+  ]
+}
+
+export function hasPermission(role: UserRole | undefined, permission: Permission): boolean {
+  if (!role) return false
+  const permissions = ROLE_PERMISSIONS[role]
+  return permissions ? permissions.includes(permission) : false
+}
