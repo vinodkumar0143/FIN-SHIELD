@@ -1,49 +1,75 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { AppShell } from '@/components/layout/AppShell'
-import { DashboardPage } from '@/features/dashboard/DashboardPage'
-import { DesignSystemShowcase } from '@/features/foundation/DesignSystemShowcase'
+import { PageTransition } from '@/components/ui/AnimatedContainer'
 import { Toaster } from 'sonner'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+
+// Auth & Foundation (Instant load)
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
 
+// Lazy loaded routes for optimal bundle chunking and performance (Phase 11D)
+const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })))
+const DesignSystemShowcase = lazy(() => import('@/features/foundation/DesignSystemShowcase').then(m => ({ default: m.DesignSystemShowcase })))
+
 // Phase 1C: Financial Intelligence
-import { InvoicesPage } from '@/features/invoices/InvoicesPage'
-import { InvoiceDetailPage } from '@/features/invoices/InvoiceDetailPage'
-import { InvoiceUploadPage } from '@/features/invoices/InvoiceUploadPage'
-import { TransactionsPage } from '@/features/transactions/TransactionsPage'
-import { TransactionDetailPage } from '@/features/transactions/TransactionDetailPage'
-import { VendorsPage } from '@/features/vendors/VendorsPage'
-import { VendorDetailPage } from '@/features/vendors/VendorDetailPage'
-import { BudgetsPage } from '@/features/budgets/BudgetsPage'
-import { BudgetDetailPage } from '@/features/budgets/BudgetDetailPage'
+const InvoicesPage = lazy(() => import('@/features/invoices/InvoicesPage').then(m => ({ default: m.InvoicesPage })))
+const InvoiceDetailPage = lazy(() => import('@/features/invoices/InvoiceDetailPage').then(m => ({ default: m.InvoiceDetailPage })))
+const InvoiceUploadPage = lazy(() => import('@/features/invoices/InvoiceUploadPage').then(m => ({ default: m.InvoiceUploadPage })))
+const TransactionsPage = lazy(() => import('@/features/transactions/TransactionsPage').then(m => ({ default: m.TransactionsPage })))
+const TransactionDetailPage = lazy(() => import('@/features/transactions/TransactionDetailPage').then(m => ({ default: m.TransactionDetailPage })))
+const VendorsPage = lazy(() => import('@/features/vendors/VendorsPage').then(m => ({ default: m.VendorsPage })))
+const VendorDetailPage = lazy(() => import('@/features/vendors/VendorDetailPage').then(m => ({ default: m.VendorDetailPage })))
+const BudgetsPage = lazy(() => import('@/features/budgets/BudgetsPage').then(m => ({ default: m.BudgetsPage })))
+const BudgetDetailPage = lazy(() => import('@/features/budgets/BudgetDetailPage').then(m => ({ default: m.BudgetDetailPage })))
 
 // Phase 1D: AI Intelligence
-import { InvestigationsPage } from '@/features/investigations/InvestigationsPage'
-import { InvestigationDetailPage } from '@/features/investigations/InvestigationDetailPage'
-import { RiskPage } from '@/features/risk/RiskPage'
-import { ForecastingPage } from '@/features/forecasting/ForecastingPage'
-import { AssistantPage } from '@/features/assistant/AssistantPage'
-import { SearchPage } from '@/features/search/SearchPage'
+const InvestigationsPage = lazy(() => import('@/features/investigations/InvestigationsPage').then(m => ({ default: m.InvestigationsPage })))
+const InvestigationDetailPage = lazy(() => import('@/features/investigations/InvestigationDetailPage').then(m => ({ default: m.InvestigationDetailPage })))
+const RiskPage = lazy(() => import('@/features/risk/RiskPage').then(m => ({ default: m.RiskPage })))
+const ForecastingPage = lazy(() => import('@/features/forecasting/ForecastingPage').then(m => ({ default: m.ForecastingPage })))
+const AssistantPage = lazy(() => import('@/features/assistant/AssistantPage').then(m => ({ default: m.AssistantPage })))
+const SearchPage = lazy(() => import('@/features/search/SearchPage').then(m => ({ default: m.SearchPage })))
 
 // Phase 1E: Operations
-import { ApprovalsPage } from '@/features/operations/ApprovalsPage'
-import { ApprovalDetailPage } from '@/features/operations/ApprovalDetailPage'
-import { WorkflowsPage } from '@/features/operations/WorkflowsPage'
-import { WorkflowDetailPage } from '@/features/operations/WorkflowDetailPage'
-import { PaymentHoldsPage } from '@/features/operations/PaymentHoldsPage'
-import { EscalationsPage } from '@/features/operations/EscalationsPage'
+const ApprovalsPage = lazy(() => import('@/features/operations/ApprovalsPage').then(m => ({ default: m.ApprovalsPage })))
+const ApprovalDetailPage = lazy(() => import('@/features/operations/ApprovalDetailPage').then(m => ({ default: m.ApprovalDetailPage })))
+const WorkflowsPage = lazy(() => import('@/features/operations/WorkflowsPage').then(m => ({ default: m.WorkflowsPage })))
+const WorkflowDetailPage = lazy(() => import('@/features/operations/WorkflowDetailPage').then(m => ({ default: m.WorkflowDetailPage })))
+const PaymentHoldsPage = lazy(() => import('@/features/operations/PaymentHoldsPage').then(m => ({ default: m.PaymentHoldsPage })))
+const EscalationsPage = lazy(() => import('@/features/operations/EscalationsPage').then(m => ({ default: m.EscalationsPage })))
 
 // Phase 1F: Insights & System
-import { AnalyticsPage } from '@/features/insights/AnalyticsPage'
-import { ReportsPage } from '@/features/insights/ReportsPage'
-import { ReportDetailPage } from '@/features/insights/ReportDetailPage'
-import { AlertsPage } from '@/features/insights/AlertsPage'
-import { AuditTrailPage } from '@/features/insights/AuditTrailPage'
-import { UsersPage } from '@/features/system/UsersPage'
-import { IntegrationsPage } from '@/features/system/IntegrationsPage'
-import { SettingsPage } from '@/features/system/SettingsPage'
+const AnalyticsPage = lazy(() => import('@/features/insights/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })))
+const ReportsPage = lazy(() => import('@/features/insights/ReportsPage').then(m => ({ default: m.ReportsPage })))
+const ReportDetailPage = lazy(() => import('@/features/insights/ReportDetailPage').then(m => ({ default: m.ReportDetailPage })))
+const AlertsPage = lazy(() => import('@/features/insights/AlertsPage').then(m => ({ default: m.AlertsPage })))
+const AuditTrailPage = lazy(() => import('@/features/insights/AuditTrailPage').then(m => ({ default: m.AuditTrailPage })))
+const UsersPage = lazy(() => import('@/features/system/UsersPage').then(m => ({ default: m.UsersPage })))
+const IntegrationsPage = lazy(() => import('@/features/system/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })))
+const SettingsPage = lazy(() => import('@/features/system/SettingsPage').then(m => ({ default: m.SettingsPage })))
+
+function RouteLoadingFallback() {
+  return (
+    <div className="space-y-6 p-2 animate-pulse" role="status" aria-label="Loading view">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="space-y-2">
+          <div className="h-6 w-48 bg-slate-800 rounded" />
+          <div className="h-3.5 w-72 bg-slate-800/60 rounded" />
+        </div>
+        <div className="h-8 w-24 bg-slate-800 rounded" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="h-24 rounded-lg bg-slate-800/50 border border-slate-800" />
+        ))}
+      </div>
+      <div className="h-72 rounded-lg bg-slate-800/30 border border-slate-800" />
+    </div>
+  )
+}
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -190,6 +216,7 @@ function AppContent() {
         </ProtectedRoute>
       )
     }
+
     if (currentPath === '/risk') {
       return (
         <ProtectedRoute requiredPermission="risk.view" onNavigate={handleNavigate}>
@@ -213,7 +240,7 @@ function AppContent() {
     }
     if (currentPath === '/search') {
       return (
-        <ProtectedRoute requiredPermission="assistant.use" onNavigate={handleNavigate}>
+        <ProtectedRoute onNavigate={handleNavigate}>
           <SearchPage onNavigate={handleNavigate} />
         </ProtectedRoute>
       )
@@ -235,6 +262,7 @@ function AppContent() {
         </ProtectedRoute>
       )
     }
+
     if (currentPath === '/workflows') {
       return (
         <ProtectedRoute requiredPermission="workflows.view" onNavigate={handleNavigate}>
@@ -250,6 +278,7 @@ function AppContent() {
         </ProtectedRoute>
       )
     }
+
     if (currentPath === '/holds') {
       return (
         <ProtectedRoute requiredPermission="holds.view" onNavigate={handleNavigate}>
@@ -257,7 +286,7 @@ function AppContent() {
         </ProtectedRoute>
       )
     }
-    if (currentPath === '/escalations' || currentPath.startsWith('/escalations/')) {
+    if (currentPath === '/escalations') {
       return (
         <ProtectedRoute requiredPermission="escalations.view" onNavigate={handleNavigate}>
           <EscalationsPage onNavigate={handleNavigate} />
@@ -288,6 +317,7 @@ function AppContent() {
         </ProtectedRoute>
       )
     }
+
     if (currentPath === '/alerts') {
       return (
         <ProtectedRoute requiredPermission="alerts.view" onNavigate={handleNavigate}>
@@ -334,7 +364,13 @@ function AppContent() {
 
   return (
     <AppShell currentPath={currentPath} onNavigate={handleNavigate}>
-      {renderRouteContent()}
+      <AnimatePresence mode="wait">
+        <PageTransition key={currentPath}>
+          <Suspense fallback={<RouteLoadingFallback />}>
+            {renderRouteContent()}
+          </Suspense>
+        </PageTransition>
+      </AnimatePresence>
     </AppShell>
   )
 }

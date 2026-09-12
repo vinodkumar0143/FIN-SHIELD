@@ -64,6 +64,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { hasPermission } = useAuth()
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileOpen) {
+        onCloseMobile()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [mobileOpen, onCloseMobile])
+
   const sections: NavSection[] = [
     {
       title: 'OVERVIEW',
@@ -283,10 +293,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={onToggleCollapse}
             className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors hidden lg:block"
             title="Collapse sidebar"
+            aria-label="Collapse sidebar"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
         )}
+
+        {/* Mobile Close Button */}
+        <button
+          onClick={onCloseMobile}
+          className="p-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors lg:hidden"
+          title="Close navigation"
+          aria-label="Close navigation"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Tenant Indicator (Expanded) */}

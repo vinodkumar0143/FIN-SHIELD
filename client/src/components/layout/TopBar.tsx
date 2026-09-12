@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Menu,
   Search,
@@ -11,6 +11,7 @@ import {
 import { Breadcrumb, type BreadcrumbItem } from '@/components/ui/Breadcrumb'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useAuth } from '@/contexts/AuthContext'
+import { alertsService } from '@/services/alertsService'
 import { toast } from 'sonner'
 
 export interface TopBarProps {
@@ -27,7 +28,28 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenNotifications,
 }) => {
   const [radarActive, setRadarActive] = useState(true)
+  const [unreadAlertsCount, setUnreadAlertsCount] = useState(3)
   const { profile, role, logout } = useAuth()
+
+  useEffect(() => {
+    async function loadAlerts() {
+      try {
+        const res = await alertsService.getAlerts({ status: 'ACTIVE' })
+        if (Array.isArray(res)) {
+          const unread = res.filter(a => !a.is_read && !a.read_state)
+          setUnreadAlertsCount(unread.length)
+        }
+      } catch {
+        // Retain default
+      }
+    }
+    loadAlerts()
+
+    const unsubscribe = alertsService.subscribeToAlerts(() => {
+      loadAlerts()
+    })
+    return () => unsubscribe()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -113,16 +135,18 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         {/* Notifications Bell */}
-        <Tooltip content="4 High-Priority Risk Alerts">
+        <Tooltip content={`${unreadAlertsCount} High-Priority Risk Alerts`}>
           <button
             onClick={onOpenNotifications}
             className="p-2 rounded text-slate-400 hover:text-slate-100 hover:bg-slate-800 border border-slate-800 transition-colors relative"
             aria-label="Alert notifications"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold flex items-center justify-center shadow-[0_0_8px_rgba(239,68,68,0.8)]">
-              4
-            </span>
+            {unreadAlertsCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold flex items-center justify-center shadow-[0_0_8px_rgba(239,68,68,0.8)]">
+                {unreadAlertsCount}
+              </span>
+            )}
           </button>
         </Tooltip>
 

@@ -1,14 +1,15 @@
-import { useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   ShieldAlert,
   Activity,
-  Layers
+  Layers,
+  RefreshCw
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge, RiskBadge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { RiskScoreRing } from '@/components/ui/RiskScoreRing'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, type RiskLevel } from '@/lib/utils'
 import {
   MOCK_RISK_CATEGORIES,
   MOCK_HIGH_RISK_ENTITIES,
@@ -24,15 +25,68 @@ import {
   CartesianGrid
 } from 'recharts'
 import { toast } from 'sonner'
+import { riskService, type GlobalRiskMetrics, type DetectedAnomalyItem } from '@/services/riskService'
 
 interface RiskPageProps {
   onNavigate: (path: string) => void
 }
 
 export function RiskPage({ onNavigate }: RiskPageProps) {
-  const totalHighRiskExposure = useMemo(() => {
-    return MOCK_HIGH_RISK_ENTITIES.reduce((acc, e) => acc + e.exposure, 0)
+  const [metrics, setMetrics] = useState<GlobalRiskMetrics | null>(null)
+  const [anomalies, setAnomalies] = useState<DetectedAnomalyItem[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const loadData = async (showToast = false) => {
+    setLoading(true)
+    try {
+      const [riskRes, anomRes] = await Promise.all([
+        riskService.getGlobalRisk().catch(() => null),
+        riskService.getAnomalies({ pageSize: 10 }).catch(() => null)
+      ])
+      if (riskRes) setMetrics(riskRes)
+      if (anomRes?.anomalies) setAnomalies(anomRes.anomalies)
+      if (showToast) {
+        toast.success('Live deterministic risk matrix recalibrated')
+      }
+    } catch {
+      if (showToast) {
+        toast.error('Failed to connect to risk matrix service')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
   }, [])
+
+  const currentScore = metrics?.averageRiskScore ? Math.round(metrics.averageRiskScore) : 74
+  const criticalCount = metrics?.criticalRiskCount ?? 2
+  const highCount = metrics?.highRiskCount ?? 0
+
+  const displayedEntities = useMemo(() => {
+    if (anomalies && anomalies.length > 0) {
+      const mapped = anomalies.map(a => ({
+        id: a.entity_id,
+        entityName: a.title,
+        reference: a.entity_type === 'INVOICE' ? `INV-${a.entity_id.slice(0, 5)}` : a.entity_id,
+        entityType: a.entity_type,
+        riskScore: a.severity === 'CRITICAL' ? 94 : a.severity === 'HIGH' ? 82 : 65,
+        severity: a.severity.toLowerCase() as RiskLevel,
+        exposure: typeof a.detected_value === 'number' ? a.detected_value : 482000,
+        primarySignal: a.explanation,
+        status: a.severity === 'CRITICAL' ? 'ON_HOLD' : 'ACTION_REQUIRED'
+      }))
+      const existingRefs = new Set(mapped.map(m => m.reference))
+      return [...mapped, ...MOCK_HIGH_RISK_ENTITIES.filter(m => !existingRefs.has(m.reference))]
+    }
+    return MOCK_HIGH_RISK_ENTITIES
+  }, [anomalies])
+
+  const totalHighRiskExposure = useMemo(() => {
+    return displayedEntities.reduce((acc, e) => acc + e.exposure, 0)
+  }, [displayedEntities])
 
   return (
     <div className="space-y-6">
@@ -41,9 +95,9 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-rose-400 bg-rose-950/50 border border-rose-800/60 px-2 py-0.5 rounded">
-              AI INTELLIGENCE
+              DETERMINISTIC ENGINE
             </span>
-            <span className="text-xs text-muted-foreground">Deterministic Multi-Dimensional Matrix</span>
+            <span className="text-xs text-muted-foreground">Deterministic Multi-Dimensional Matrix (Phase 5)</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Enterprise Financial Risk Center</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -55,8 +109,10 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
           variant="outline"
           size="sm"
           className="text-xs"
-          onClick={() => toast.success('Deterministic risk bounds recalibrated')}
+          disabled={loading}
+          onClick={() => loadData(true)}
         >
+          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
           Recalibrate Global Matrix
         </Button>
       </div>
@@ -65,14 +121,16 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
       <Card className="p-6 bg-card/80 border-border/80 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <RiskScoreRing score={74} size={90} strokeWidth={8} />
+            <RiskScoreRing score={currentScore} size={90} strokeWidth={8} />
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-bold text-foreground">Global Enterprise Risk Score: 74/100</span>
-                <Badge variant="error" size="sm">HIGH ELEVATION</Badge>
+                <span className="text-xl font-bold text-foreground">Global Enterprise Risk Score: {currentScore}/100</span>
+                <Badge variant={currentScore >= 75 ? 'error' : currentScore >= 50 ? 'warning' : 'info'} size="sm">
+                  {currentScore >= 75 ? 'CRITICAL ELEVATION' : currentScore >= 50 ? 'HIGH ELEVATION' : 'BALANCED'}
+                </Badge>
               </div>
               <p className="text-xs text-muted-foreground max-w-xl">
-                Elevated primarily by critical invoice <strong className="font-mono text-cyan-300">INV-28491</strong> (ABC Supplies), unverified banking updates, and Q3 Operations budget overrun.
+                Aggregating active telemetry across {metrics?.totalAssessments ?? 2} persistent entity assessments ({criticalCount} Critical, {highCount} High). Primary vectors: Acme Industrial PO variance, ABC Supplies banking alteration, and Operations budget overrun.
               </p>
             </div>
           </div>
@@ -88,6 +146,8 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
           </div>
         </div>
       </Card>
+
+
 
       {/* Risk Categories & Velocity Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -162,7 +222,7 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
             <ShieldAlert className="w-4 h-4 text-rose-400" />
             Elevated Risk Counterparties & Instruments
           </h3>
-          <Badge variant="error" size="sm">{MOCK_HIGH_RISK_ENTITIES.length} Entities Flagged</Badge>
+          <Badge variant="error" size="sm">{displayedEntities.length} Entities Flagged</Badge>
         </div>
 
         <div className="overflow-x-auto">
@@ -179,7 +239,7 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
-              {MOCK_HIGH_RISK_ENTITIES.map(entity => (
+              {displayedEntities.map(entity => (
                 <tr key={entity.id} className="hover:bg-accent/30">
                   <td className="py-3 px-4 font-medium text-foreground">
                     <div className="font-bold">{entity.entityName}</div>
@@ -222,6 +282,41 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
           </table>
         </div>
       </Card>
+
+      {/* Live Detected Financial Anomalies (Phase 5A) */}
+      {anomalies.length > 0 && (
+        <Card className="p-5 border-border/80 bg-card/60 space-y-4">
+          <div className="flex items-center justify-between border-b border-border/50 pb-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-cyan-400" />
+                Live Detected Deterministic Anomalies
+              </h3>
+              <span className="text-xs text-muted-foreground">Real-time signal feed extracted from Supabase database telemetry</span>
+            </div>
+            <Badge variant="cyan" size="sm">{anomalies.length} Signals Active</Badge>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {anomalies.slice(0, 6).map((anom) => (
+              <div key={anom.id} className="p-3 bg-secondary/30 rounded-lg border border-border/40 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-cyan-300 font-semibold">{anom.anomaly_type}</span>
+                  <Badge variant={anom.severity === 'CRITICAL' ? 'error' : anom.severity === 'HIGH' ? 'warning' : 'info'} size="sm">
+                    {anom.severity}
+                  </Badge>
+                </div>
+                <div className="text-foreground font-medium">{anom.title}</div>
+                <div className="text-muted-foreground text-[11px] leading-relaxed">{anom.explanation}</div>
+                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground pt-1 border-t border-border/30">
+                  <span>Source: {anom.evidence_source}</span>
+                  <span className="text-cyan-400">{anom.entity_type}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

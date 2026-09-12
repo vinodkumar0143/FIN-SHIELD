@@ -87,6 +87,8 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
 
   return (
     <span
+      role="status"
+      aria-label={`Risk Level: ${theme.label}${score !== undefined ? ` (Score: ${score}/100)` : ''}`}
       className={cn(
         'inline-flex items-center gap-1.5 rounded font-mono font-semibold tracking-wider uppercase border select-none',
         theme.badge,
@@ -95,7 +97,7 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
       )}
       {...props}
     >
-      {showDot && <span className={cn('h-1.5 w-1.5 rounded-full', theme.dot)} />}
+      {showDot && <span className={cn('h-1.5 w-1.5 rounded-full', theme.dot)} aria-hidden="true" />}
       <span>{theme.label}</span>
       {showScore && score !== undefined && (
         <span className="ml-1 pl-1 border-l border-current/30 opacity-90">{score}/100</span>

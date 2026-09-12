@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button'
 import { SearchInput } from '@/components/ui/Input'
 import { formatCurrency, type RiskLevel } from '@/lib/utils'
 import { apiClient } from '@/services/apiClient'
+import { realtimeService } from '@/services/realtimeService'
 import { toast } from 'sonner'
 
 interface InvoicesPageProps {
@@ -99,6 +100,11 @@ export function InvoicesPage({ onNavigate }: InvoicesPageProps) {
 
   useEffect(() => {
     fetchInvoices()
+
+    const unsubscribe = realtimeService.subscribe('invoices', () => {
+      fetchInvoices()
+    })
+    return () => unsubscribe()
   }, [fetchInvoices])
 
   // Overview metrics computed from current set

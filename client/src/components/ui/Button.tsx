@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500 disabled:pointer-events-none disabled:opacity-40 select-none text-xs tracking-wide',
+  'inline-flex items-center justify-center whitespace-nowrap rounded font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F19] disabled:pointer-events-none disabled:opacity-40 select-none text-xs tracking-wide cursor-pointer',
   {
     variants: {
       variant: {
@@ -53,6 +53,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(buttonVariants({ variant, size }), className)}
         disabled={disabled || isLoading}
+        aria-busy={isLoading ? 'true' : undefined}
+        aria-disabled={disabled || isLoading ? 'true' : undefined}
         {...props}
       >
         {isLoading ? (

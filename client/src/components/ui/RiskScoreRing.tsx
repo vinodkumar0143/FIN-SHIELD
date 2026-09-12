@@ -23,9 +23,16 @@ export const RiskScoreRing: React.FC<RiskScoreRingProps> = ({
   const theme = getRiskTheme(clampedScore)
 
   return (
-    <div className={cn('relative flex flex-col items-center justify-center select-none', className)}>
+    <div
+      role="progressbar"
+      aria-valuenow={clampedScore}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`Risk score: ${clampedScore} out of 100, severity: ${theme.label}`}
+      className={cn('relative flex flex-col items-center justify-center select-none', className)}
+    >
       <div className="relative" style={{ width: size, height: size }}>
-        <svg className="w-full h-full -rotate-90 transform" viewBox={`0 0 ${size} ${size}`}>
+        <svg className="w-full h-full -rotate-90 transform" viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
           {/* Background Track */}
           <circle
             cx={size / 2}

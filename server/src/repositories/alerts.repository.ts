@@ -42,6 +42,17 @@ export class AlertsRepository {
     return data
   }
 
+  async findById(id: string): Promise<AlertRow | null> {
+    const { data, error } = await this.client
+      .from('alerts')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (error) return null
+    return data
+  }
+
   async markAsRead(id: string): Promise<AlertRow> {
     const { data, error } = await this.client
       .from('alerts')
@@ -52,6 +63,15 @@ export class AlertsRepository {
 
     if (error) throw error
     return data
+  }
+
+  async markAllAsRead(): Promise<void> {
+    const { error } = await this.client
+      .from('alerts')
+      .update({ read_state: true })
+      .eq('read_state', false)
+
+    if (error) throw error
   }
 
   async resolve(id: string): Promise<AlertRow> {

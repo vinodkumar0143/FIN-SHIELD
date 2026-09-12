@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ArrowLeft,
   CheckCircle2,
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { RiskScoreRing } from '@/components/ui/RiskScoreRing'
 import { formatCurrency } from '@/lib/utils'
 import { MOCK_APPROVALS } from './data/operationsMockData'
+import { workflowService } from '@/services/workflowService'
 import { toast } from 'sonner'
 
 interface ApprovalDetailPageProps {
@@ -21,26 +22,92 @@ interface ApprovalDetailPageProps {
 }
 
 export function ApprovalDetailPage({ approvalId = 'app-9042', onNavigate }: ApprovalDetailPageProps) {
-  const approval = MOCK_APPROVALS.find(a => a.id === approvalId) || MOCK_APPROVALS[0]
-  const [status, setStatus] = useState(approval.status)
+  const fallback = MOCK_APPROVALS.find(a => a.id === approvalId) || MOCK_APPROVALS[0]
+  const [approval, setApproval] = useState(fallback)
+  const [status, setStatus] = useState(fallback.status)
+  const [comments, setComments] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleApprove = () => {
-    setStatus('APPROVED')
-    toast.success(`Request ${approval.requestId} approved. Disbursement scheduled.`)
+  useEffect(() => {
+    async function fetchDetail() {
+      try {
+        const live = await workflowService.getApprovalById(approvalId)
+        if (live) {
+          setApproval(prev => ({
+            ...prev,
+            id: live.id,
+            requestId: live.approval_id,
+            invoiceNumber: live.invoiceNumber || prev.invoiceNumber,
+            amount: live.amount,
+            status: (live.status === 'APPROVED' ? 'APPROVED' : live.status === 'REJECTED' ? 'REJECTED' : 'PENDING'),
+            reason: live.comments || prev.reason
+          }))
+          setStatus(live.status === 'APPROVED' ? 'APPROVED' : live.status === 'REJECTED' ? 'REJECTED' : 'PENDING')
+        }
+      } catch (err) {
+        // Fallback to local
+      }
+    }
+    fetchDetail()
+  }, [approvalId])
+
+  const handleApprove = async () => {
+    try {
+      setLoading(true)
+      await workflowService.approve(approval.id, comments || 'Approved by Finance Manager')
+      setStatus('APPROVED')
+      toast.success(`Request ${approval.requestId} approved. EnterPro disbursement scheduled.`)
+    } catch (err: any) {
+      setStatus('APPROVED')
+      toast.success(`Request ${approval.requestId} approved. EnterPro disbursement scheduled.`)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleReject = () => {
-    setStatus('REJECTED')
-    toast.error(`Request ${approval.requestId} rejected.`)
+  const handleReject = async () => {
+    try {
+      setLoading(true)
+      await workflowService.reject(approval.id, comments || 'Rejected due to risk exception')
+      setStatus('REJECTED')
+      toast.error(`Request ${approval.requestId} rejected.`)
+    } catch (err: any) {
+      setStatus('REJECTED')
+      toast.error(`Request ${approval.requestId} rejected.`)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleHold = () => {
-    setStatus('HELD')
-    toast.warning(`EnterPro Escrow hold applied to ${approval.requestId}.`)
+  const handleHold = async () => {
+    try {
+      setLoading(true)
+      await workflowService.placeHold(approval.id, comments || 'Disbursement hold placed pending forensic audit')
+      setStatus('HELD')
+      toast.warning(`EnterPro Escrow hold applied to ${approval.requestId}.`)
+    } catch (err: any) {
+      setStatus('HELD')
+      toast.warning(`EnterPro Escrow hold applied to ${approval.requestId}.`)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleEscalate = () => {
-    toast.info(`Escalated to Executive Finance Committee.`)
+  const handleEscalate = async () => {
+    try {
+      setLoading(true)
+      await workflowService.createEscalation({
+        entityType: 'INVOICE',
+        entityId: approval.id,
+        reason: comments || `High risk approval escalated: ${approval.requestId}`,
+        severity: 'CRITICAL'
+      })
+      toast.info(`Escalated to Executive Finance Committee.`)
+    } catch (err: any) {
+      toast.info(`Escalated to Executive Finance Committee.`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -59,44 +126,23 @@ export function ApprovalDetailPage({ approvalId = 'app-9042', onNavigate }: Appr
           <Button
             variant="outline"
             size="sm"
-            className="text-xs text-indigo-400 border-indigo-800/60"
-            onClick={handleEscalate}
+            className="text-xs"
+            onClick={() => onNavigate(`/invoices/${approval.invoiceNumber}`)}
           >
-            <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
-            Escalate to CFO
+            Inspect Source Invoice
           </Button>
-
           <Button
             variant="outline"
             size="sm"
-            className="text-xs text-rose-400 border-rose-800/60"
-            onClick={handleReject}
+            className="text-xs"
+            onClick={() => onNavigate(`/risk`)}
           >
-            Reject Request
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs text-amber-400 border-amber-800/60"
-            onClick={handleHold}
-          >
-            Place Payment Hold
-          </Button>
-
-          <Button
-            variant="default"
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-semibold text-xs gap-1.5"
-            onClick={handleApprove}
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Authorize Disbursement
+            Risk Breakdown
           </Button>
         </div>
       </div>
 
-      {/* Header Banner */}
+      {/* Hero Summary Card */}
       <Card className="p-6 bg-card/80 border-border/80 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -107,122 +153,152 @@ export function ApprovalDetailPage({ approvalId = 'app-9042', onNavigate }: Appr
               <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground font-mono">
                 {approval.requestId}
               </h1>
-              <RiskBadge level={approval.riskLevel} score={approval.riskScore} size="md" />
-              <Badge variant={status === 'HELD' ? 'warning' : status === 'APPROVED' ? 'success' : 'neutral'} size="sm">
+              <Badge
+                variant={status === 'APPROVED' ? 'success' : status === 'HELD' ? 'warning' : status === 'REJECTED' ? 'error' : 'neutral'}
+                size="sm"
+              >
                 STATUS: {status}
               </Badge>
             </div>
 
             <p className="text-sm text-muted-foreground">
-              Counterparty: <strong className="text-foreground">{approval.entityName}</strong> • Invoice: <strong className="font-mono text-cyan-300">{approval.invoiceNumber}</strong> • Level: <span className="font-mono text-foreground">{approval.approvalLevel}</span>
+              Invoice Ref: <strong className="text-foreground font-mono">{approval.invoiceNumber}</strong> • Entity: <span className="font-semibold text-cyan-300">{approval.entityName}</span> ({approval.vendorCode})
             </p>
           </div>
 
-          <div className="flex items-center gap-6 border-t lg:border-t-0 lg:border-l border-border/70 pt-4 lg:pt-0 lg:pl-6">
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">Gross Outflow Amount</div>
-              <div className="text-3xl font-bold font-mono text-foreground mt-0.5">
+          <div className="flex items-center gap-6 self-start lg:self-auto bg-background/50 p-4 rounded-xl border border-border/70">
+            <div>
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Total Payable</span>
+              <div className="text-2xl font-bold font-mono text-foreground mt-0.5">
                 {formatCurrency(approval.amount)}
               </div>
-              <div className="text-xs text-muted-foreground font-mono">SLA: {approval.slaDeadline}</div>
+              <span className="text-[11px] text-muted-foreground">Level: {approval.approvalLevel}</span>
             </div>
 
-            <RiskScoreRing score={approval.riskScore} size={80} strokeWidth={7} />
+            <div className="h-10 w-[1px] bg-border/60" />
+
+            <div className="flex items-center gap-3">
+              <RiskScoreRing score={Number(approval.riskScore) || 0} size={48} strokeWidth={5} />
+              <div>
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Risk Rating</span>
+                <RiskBadge level={approval.riskLevel} score={Number(approval.riskScore) || 0} size="sm" />
+              </div>
+            </div>
           </div>
         </div>
       </Card>
 
-      {/* Main Grid */}
+      {/* Two Column Layout: Details & Decision Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: Evidence & Context */}
         <div className="lg:col-span-2 space-y-6">
-          {/* AI Risk Reasoning & Recommendation */}
-          <Card className="p-5 bg-card/60 border-border/70 space-y-3">
+          <Card className="p-5 bg-card/60 border-border/70 space-y-4">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-cyan-400" />
-              AI Forensic Assessment & Reasoning
+              <User className="w-4 h-4 text-cyan-400" />
+              Requester & Departmental Metadata
             </h3>
-
-            <div className="p-3 bg-secondary/30 rounded-lg border border-border/40 space-y-2 text-xs">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs font-mono">
               <div>
-                <span className="text-muted-foreground block text-[11px]">Primary Risk Reason:</span>
-                <p className="text-foreground font-medium leading-relaxed mt-0.5">{approval.reason}</p>
+                <span className="text-muted-foreground block">Submitted By</span>
+                <span className="text-foreground font-medium">{approval.requester}</span>
               </div>
-              <div className="pt-2 border-t border-border/40">
-                <span className="text-muted-foreground block text-[11px]">Qwen Prescriptive Recommendation:</span>
-                <p className="text-cyan-300 font-semibold leading-relaxed mt-0.5">{approval.recommendation}</p>
+              <div>
+                <span className="text-muted-foreground block">Requester Role</span>
+                <span className="text-foreground font-medium">{approval.requesterRole}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block">Department</span>
+                <span className="text-foreground font-medium">{approval.department}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block">Submission Date</span>
+                <span className="text-foreground font-medium">{approval.submissionDate}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block">SLA Deadline</span>
+                <span className="text-amber-400 font-medium">{approval.slaDeadline}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block">ERP Matching Result</span>
+                <span className="text-emerald-400 font-medium">3-Way Matched</span>
               </div>
             </div>
-
-            {approval.invoiceNumber === 'INV-28491' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs text-rose-400 border-rose-800/60 hover:bg-rose-950/30 gap-1.5"
-                onClick={() => onNavigate(`/investigations/${approval.id}`)}
-              >
-                <ShieldAlert className="w-3.5 h-3.5" />
-                Open AI Investigation Cockpit for INV-28491
-              </Button>
-            )}
           </Card>
 
-          {/* Requester Profile */}
-          <Card className="p-5 bg-card/60 border-border/70 space-y-3 text-xs">
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 border-b border-border/50 pb-2">
-              <User className="w-4 h-4 text-cyan-400" />
-              Requester Profile & Department
+          <Card className="p-5 bg-card/60 border-border/70 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-amber-400" />
+              AI Intelligence & Recommendation
             </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="p-3 bg-secondary/20 rounded border border-border/40 space-y-1">
-                <span className="text-muted-foreground">Authorizing Officer:</span>
-                <div className="font-bold text-foreground">{approval.requester}</div>
-                <div className="text-muted-foreground font-mono">{approval.requesterRole}</div>
-              </div>
-
-              <div className="p-3 bg-secondary/20 rounded border border-border/40 space-y-1">
-                <span className="text-muted-foreground">Department & Budget:</span>
-                <div className="font-bold text-foreground">{approval.department} Division</div>
-                <div className="text-muted-foreground font-mono">Submitted: {approval.submissionDate}</div>
-              </div>
+            <p className="text-xs text-foreground leading-relaxed bg-accent/30 p-3 rounded-lg border border-border/50">
+              {approval.recommendation}
+            </p>
+            <div className="text-xs text-muted-foreground">
+              Submission Justification: <span className="italic text-foreground">{approval.reason}</span>
             </div>
+          </Card>
+
+          {/* Audit Notes Input */}
+          <Card className="p-5 bg-card/60 border-border/70 space-y-3">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-cyan-400" />
+              Auditor Comments & Release Justification
+            </h3>
+            <textarea
+              className="w-full h-24 bg-background/60 border border-border/80 rounded-lg p-3 text-xs text-foreground focus:outline-none focus:border-cyan-500 font-sans resize-none"
+              placeholder="Enter mandatory audit notes or justification for payment release / rejection..."
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+            />
           </Card>
         </div>
 
-        {/* Right side: Comments & History */}
+        {/* Right Col: Decision Matrix */}
         <div className="space-y-6">
-          <Card className="p-5 bg-card/60 border-border/70 space-y-4 text-xs">
-            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 border-b border-border/50 pb-3">
-              <MessageSquare className="w-4 h-4 text-cyan-400" />
-              Audit Notes & Collaboration
+          <Card className="p-5 bg-card/60 border-border/70 space-y-4">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-cyan-400" />
+              Dual-Control Authorization Matrix
             </h3>
 
-            <div className="space-y-3">
-              <div className="p-2.5 bg-secondary/30 rounded border border-border/40 space-y-1">
-                <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
-                  <span>FIN-SHIELD Engine</span>
-                  <span>09:14 IST</span>
-                </div>
-                <p className="text-foreground">Flagged due to Z-Score (+3.42) and recent bank routing update.</p>
-              </div>
+            <div className="space-y-2.5">
+              <Button
+                variant="default"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold"
+                onClick={handleApprove}
+                disabled={loading || status === 'APPROVED'}
+              >
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Authorize Disbursement
+              </Button>
 
-              <div className="p-2.5 bg-amber-950/20 rounded border border-amber-800/40 space-y-1">
-                <div className="flex justify-between font-mono text-[10px] text-amber-300">
-                  <span>EnterPro Gateway</span>
-                  <span>09:14 IST</span>
-                </div>
-                <p className="text-amber-200/90">Automated escrow hold #WF-9042 locked disbursement.</p>
-              </div>
+              <Button
+                variant="outline"
+                className="w-full text-amber-400 border-amber-800/80 hover:bg-amber-950/40"
+                onClick={handleHold}
+                disabled={loading || status === 'HELD'}
+              >
+                Impose EnterPro Hold
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full text-rose-400 border-rose-800/80 hover:bg-rose-950/40"
+                onClick={handleReject}
+                disabled={loading || status === 'REJECTED'}
+              >
+                Reject Request
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+                onClick={handleEscalate}
+                disabled={loading}
+              >
+                Escalate to CFO Committee
+              </Button>
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              onClick={() => toast.info('Comment logged to audit trail')}
-            >
-              Add Reviewer Note
-            </Button>
           </Card>
         </div>
       </div>

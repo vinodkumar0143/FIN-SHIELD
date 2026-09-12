@@ -18,6 +18,8 @@ import {
   type SearchResultItem
 } from './data/searchMockData'
 
+import { aiService } from '@/services/aiService'
+
 interface SearchPageProps {
   onNavigate: (path: string) => void
 }
@@ -25,28 +27,54 @@ interface SearchPageProps {
 export function SearchPage({ onNavigate }: SearchPageProps) {
   const [query, setQuery] = useState('')
   const [activeQuery, setActiveQuery] = useState('Show invoices above ₹5 lakh with high risk')
+  const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<SearchResultItem[]>(
     SEARCH_RESULTS_BY_QUERY['Show invoices above ₹5 lakh with high risk']
   )
 
-  const handleExecuteSearch = (searchStr: string) => {
+  const handleExecuteSearch = async (searchStr: string) => {
     const q = searchStr.trim()
     if (!q) return
     setActiveQuery(q)
     setQuery(q)
+    setIsSearching(true)
 
-    if (SEARCH_RESULTS_BY_QUERY[q]) {
-      setResults(SEARCH_RESULTS_BY_QUERY[q])
-    } else {
-      // Fuzzy search across all items
-      const allItems = Object.values(SEARCH_RESULTS_BY_QUERY).flat()
-      const lower = q.toLowerCase()
-      const matched = allItems.filter(item =>
-        item.title.toLowerCase().includes(lower) ||
-        item.subtitle.toLowerCase().includes(lower) ||
-        item.highlights.some(h => h.toLowerCase().includes(lower))
-      )
-      setResults(matched.length > 0 ? matched : SEARCH_RESULTS_BY_QUERY['Show invoices above ₹5 lakh with high risk'])
+    try {
+      const response = await aiService.search(q)
+      if (response.results && response.results.length > 0) {
+        const mapped: SearchResultItem[] = response.results.map(r => ({
+          id: r.id,
+          title: r.title,
+          subtitle: r.subtitle,
+          type: r.type as any,
+          amount: r.amount,
+          riskScore: r.riskScore,
+          severity: (r.riskLevel.toLowerCase() as any) || 'medium',
+          route: r.entityUrl || (r.type === 'INVOICE' ? `/invoices/${r.id}` : r.type === 'VENDOR' ? `/vendors/${r.id}` : `/budgets`),
+          badgeText: r.status || r.riskLevel,
+          highlights: r.highlights || []
+        }))
+        setResults(mapped)
+      } else if (SEARCH_RESULTS_BY_QUERY[q]) {
+        setResults(SEARCH_RESULTS_BY_QUERY[q])
+      } else {
+        setResults([])
+      }
+    } catch {
+      if (SEARCH_RESULTS_BY_QUERY[q]) {
+        setResults(SEARCH_RESULTS_BY_QUERY[q])
+      } else {
+        const allItems = Object.values(SEARCH_RESULTS_BY_QUERY).flat()
+        const lower = q.toLowerCase()
+        const matched = allItems.filter(item =>
+          item.title.toLowerCase().includes(lower) ||
+          item.subtitle.toLowerCase().includes(lower) ||
+          item.highlights.some(h => h.toLowerCase().includes(lower))
+        )
+        setResults(matched.length > 0 ? matched : SEARCH_RESULTS_BY_QUERY['Show invoices above ₹5 lakh with high risk'])
+      }
+    } finally {
+      setIsSearching(false)
     }
   }
 
@@ -93,10 +121,11 @@ export function SearchPage({ onNavigate }: SearchPageProps) {
           <Button
             variant="default"
             size="sm"
+            disabled={isSearching}
             className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold text-xs px-4"
             onClick={() => handleExecuteSearch(query)}
           >
-            Search
+            {isSearching ? 'Searching...' : 'Search'}
           </Button>
         </div>
       </Card>

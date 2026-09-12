@@ -1,0 +1,10 @@
+# Server dependencies and build artifacts
+node_modules/
+dist/
+*.log
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+*.local
