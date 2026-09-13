@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import type * as core from 'express-serve-static-core'
 import { supabaseAdmin } from '../config/supabase.js'
 import type { Database } from '../types/database.types.js'
 import { type UserRole, type Permission, hasPermission } from '../lib/permissions.js'
@@ -12,8 +13,17 @@ export interface AuthenticatedUser {
   profile?: ProfileRow
 }
 
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest<
+  P = core.ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = core.Query,
+  Locals extends Record<string, any> = Record<string, any>
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   user?: AuthenticatedUser
+  params: P
+  query: ReqQuery
+  body: ReqBody
 }
 
 /**

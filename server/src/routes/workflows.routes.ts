@@ -1,4 +1,4 @@
-import { Router, Response } from 'express'
+import { Router, Request, Response } from 'express'
 import { EnterproService } from '../services/enterpro.service.js'
 import { requireAuth, requirePermission, type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 
@@ -109,7 +109,7 @@ export function createWorkflowsRouter(): Router {
    * POST /api/workflows/webhook
    * Simulated external EnterPro ERP callback.
    */
-  router.post('/webhook', async (req, res) => {
+  router.post('/webhook', async (req: Request, res: Response) => {
     try {
       const { taskId, event, status } = req.body
       console.log(`[EnterPro Webhook Received] taskId=${taskId}, event=${event}, status=${status}`)
