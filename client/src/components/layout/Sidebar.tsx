@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import {
-  Shield,
   LayoutDashboard,
   Receipt,
   ArrowLeftRight,
@@ -364,13 +364,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onClick={() => onNavigate('/dashboard')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <div className="h-8 w-8 rounded-lg bg-surface-elevated border border-border-elevated flex items-center justify-center text-brand-cyan transition-colors group-hover:border-brand-cyan/50">
-            <Shield className="h-4 w-4 fill-brand-cyan/20" />
-          </div>
+          <FinShieldLogo
+            variant="compact"
+            size="sm"
+            className="group-hover:border-cyan-500/60 transition-colors shrink-0"
+          />
           {!collapsed && (
             <div className="flex flex-col">
               <span className="font-mono text-sm font-bold tracking-wider text-slate-100">
-                FINSHIELD
+                FinShield
               </span>
               <span className="text-[10px] font-mono tracking-wider text-muted-foreground">
                 Financial Investigation Center

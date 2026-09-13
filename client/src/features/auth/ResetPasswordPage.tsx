@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Shield, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Lock, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth, formatAuthError } from '@/contexts/AuthContext'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import { supabase } from '@/lib/supabaseClient'
 import { AuthBackground } from './AuthBackground'
 import { toast } from 'sonner'
@@ -90,13 +91,13 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* Branding */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-lg shadow-cyan-950/40 mb-1">
-            <Shield className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+        <div className="text-center space-y-2.5">
+          <div className="flex justify-center">
+            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FIN-SHIELD</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
           <p className="text-xs text-slate-400 font-medium">
-            Enterprise Security & Credential Reset
+            Enterprise Security &amp; Credential Reset
           </p>
         </div>
 

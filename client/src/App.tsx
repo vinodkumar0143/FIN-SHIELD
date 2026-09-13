@@ -12,7 +12,9 @@ import { SignupPage } from '@/features/auth/SignupPage'
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/features/auth/ResetPasswordPage'
 import { AuthCallbackPage } from '@/features/auth/AuthCallbackPage'
-import { ProfileCompletionPage } from '@/features/auth/ProfileCompletionPage'
+import { SelectContextPage } from '@/features/auth/SelectContextPage'
+import { SplashScreen } from '@/features/landing/SplashScreen'
+import { AboutPage } from '@/features/landing/AboutPage'
 
 // Lazy loaded routes for optimal bundle chunking and performance (Phase 11D)
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -94,6 +96,8 @@ function AppContent() {
   }
 
   const PUBLIC_ROUTES = [
+    '/',
+    '/about',
     '/login',
     '/signup',
     '/forgot-password',
@@ -110,16 +114,24 @@ function AppContent() {
         }
       } else {
         const needsProfileCompletion = profile && (!profile.department || !profile.role)
-        if (needsProfileCompletion && currentPath !== '/profile-completion' && currentPath !== '/auth/callback') {
-          handleNavigate('/profile-completion')
+        if (needsProfileCompletion && currentPath !== '/select-context' && currentPath !== '/profile-completion' && currentPath !== '/auth/callback') {
+          handleNavigate('/select-context')
         } else if (currentPath === '/' || currentPath === '/login' || currentPath === '/signup') {
-          handleNavigate('/dashboard')
+          handleNavigate('/select-context')
         }
       }
     }
   }, [isAuthenticated, isLoading, currentPath, profile])
 
   // Public standalone pages (rendered outside AppShell)
+  if (currentPath === '/') {
+    return <SplashScreen onNavigate={handleNavigate} />
+  }
+
+  if (currentPath === '/about') {
+    return <AboutPage onNavigate={handleNavigate} />
+  }
+
   if (currentPath === '/login') {
     return <LoginPage onNavigate={handleNavigate} />
   }
@@ -140,8 +152,8 @@ function AppContent() {
     return <AuthCallbackPage onNavigate={handleNavigate} />
   }
 
-  if (currentPath === '/profile-completion') {
-    return <ProfileCompletionPage onNavigate={handleNavigate} />
+  if (currentPath === '/select-context' || currentPath === '/profile-completion') {
+    return <SelectContextPage onNavigate={handleNavigate} />
   }
 
   // Render active protected route inside AppShell

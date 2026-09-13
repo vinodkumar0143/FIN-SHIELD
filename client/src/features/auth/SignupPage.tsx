@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Shield, Lock, Mail, User, Building, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Lock, Mail, User, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2, Eye, EyeOff } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth, formatAuthError } from '@/contexts/AuthContext'
-import type { UserRole } from '@/lib/permissions'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import { AuthBackground } from './AuthBackground'
 import { toast } from 'sonner'
 
@@ -11,32 +11,17 @@ interface SignupPageProps {
   onNavigate: (path: string) => void
 }
 
-const DEPARTMENTS = [
-  'Finance',
-  'Treasury',
-  'Forensics',
-  'Operations',
-  'Procurement'
-]
-
-const ROLES: { value: UserRole; label: string }[] = [
-  { value: 'FINANCE_ANALYST', label: 'Finance Analyst' },
-  { value: 'FINANCE_MANAGER', label: 'Finance Manager' },
-  { value: 'EMPLOYEE', label: 'Employee' },
-  { value: 'ADMIN', label: 'Admin' }
-]
-
 export function SignupPage({ onNavigate }: SignupPageProps) {
   const { signup, loginWithOAuth, resendVerificationEmail, isAuthenticated } = useAuth()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [department, setDepartment] = useState('Finance')
-  const [role, setRole] = useState<UserRole>('FINANCE_ANALYST')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Verification state tracking
@@ -69,7 +54,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email.trim())) {
-      return 'Please enter a valid email address.'
+      return 'Please enter a valid corporate email address.'
     }
 
     // Password strength check: minimum 8 characters
@@ -86,7 +71,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isSubmitting || oauthLoading) return
+    if (isSubmitting || isGoogleLoading) return
     setErrorMessage(null)
 
     const validationError = validateInputs()
@@ -100,9 +85,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
     const { error, needsEmailVerification } = await signup({
       fullName: fullName.trim(),
       email: trimmedEmail,
-      password,
-      department,
-      role
+      password
     })
     setIsSubmitting(false)
 
@@ -116,18 +99,18 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
       setResendCooldown(60)
       toast.info("Account created. Please verify your email to continue.")
     } else {
-      toast.success('Registration successful! Welcome to FinShield.')
-      onNavigate('/dashboard')
+      toast.success('Registration successful! Please sign in with your credentials.')
+      onNavigate('/login')
     }
   }
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
-    if (isSubmitting || oauthLoading) return
+  const handleGoogleAuth = async () => {
+    if (isSubmitting || isGoogleLoading) return
     setErrorMessage(null)
-    setOauthLoading(provider)
+    setIsGoogleLoading(true)
 
-    const { error } = await loginWithOAuth(provider)
-    setOauthLoading(null)
+    const { error } = await loginWithOAuth('google')
+    setIsGoogleLoading(false)
 
     if (error) {
       const userMessage = formatAuthError(error)
@@ -156,7 +139,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
     }
   }
 
-  const isBusy = isSubmitting || oauthLoading !== null
+  const isBusy = isSubmitting || isGoogleLoading
 
   // Verification Screen View
   if (verificationPending) {
@@ -165,11 +148,11 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
         <AuthBackground />
 
         <div className="w-full max-w-md relative z-10 space-y-6">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-lg shadow-cyan-950/40 mb-1">
-              <Shield className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+          <div className="text-center space-y-2.5">
+            <div className="flex justify-center">
+              <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FIN-SHIELD</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
           </div>
 
           <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
@@ -183,7 +166,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
                 <span className="text-cyan-400 font-mono font-medium block mt-1">{registeredEmail}</span>
               </p>
               <p className="text-xs text-slate-400">
-                Verify your email to activate your account and continue to FinShield.
+                Verify your corporate email to activate your account, then sign in.
               </p>
             </div>
 
@@ -243,12 +226,12 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* FinShield Branding Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-lg shadow-cyan-950/40 mb-1">
-            <Shield className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+        <div className="text-center space-y-2.5">
+          <div className="flex justify-center">
+            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
           </div>
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FIN-SHIELD</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-400 font-bold uppercase tracking-wider">
               ENTERPRISE
             </span>
@@ -279,7 +262,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
             </div>
           )}
 
-          <form onSubmit={handleSignup} className="space-y-3">
+          <form onSubmit={handleSignup} className="space-y-3.5">
             {/* Full Name */}
             <div className="space-y-1">
               <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
@@ -294,7 +277,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
                   placeholder="e.g. Vikram Malhotra"
                   required
                   disabled={isBusy}
-                  className="w-full h-9 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all disabled:opacity-60"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all disabled:opacity-60"
                 />
               </div>
             </div>
@@ -314,91 +297,66 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
                   required
                   disabled={isBusy}
                   autoComplete="email"
-                  className="w-full h-9 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
                 />
               </div>
             </div>
 
-            {/* Department & Role */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Department
-                </label>
-                <div className="relative">
-                  <Building className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <select
-                    value={department}
-                    onChange={e => setDepartment(e.target.value)}
-                    disabled={isBusy}
-                    className="w-full h-9 pl-9 pr-2 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all disabled:opacity-60"
-                  >
-                    {DEPARTMENTS.map(dept => (
-                      <option key={dept} value={dept} className="bg-slate-900 text-white">
-                        {dept}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Role
-                </label>
-                <select
-                  value={role}
-                  onChange={e => setRole(e.target.value as UserRole)}
+            {/* Password */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  required
                   disabled={isBusy}
-                  className="w-full h-9 px-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all disabled:opacity-60"
+                  autoComplete="new-password"
+                  className="w-full h-10 pl-9 pr-10 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isBusy}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {ROLES.map(r => (
-                    <option key={r.value} value={r.value} className="bg-slate-900 text-white">
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
-            {/* Passwords */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    disabled={isBusy}
-                    autoComplete="new-password"
-                    className="w-full h-9 pl-8 pr-2 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all font-mono disabled:opacity-60"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    disabled={isBusy}
-                    autoComplete="new-password"
-                    className="w-full h-9 pl-8 pr-2 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all font-mono disabled:opacity-60"
-                  />
-                </div>
+            {/* Confirm Password */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  required
+                  disabled={isBusy}
+                  autoComplete="new-password"
+                  className="w-full h-10 pl-9 pr-10 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isBusy}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -423,7 +381,7 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
           </form>
 
           {/* Social OAuth Divider */}
-          <div className="relative my-3">
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-800" />
             </div>
@@ -432,18 +390,18 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
             </div>
           </div>
 
-          {/* OAuth Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Google OAuth Button - Full width */}
+          <div>
             <button
               type="button"
-              onClick={() => handleOAuth('google')}
+              onClick={handleGoogleAuth}
               disabled={isBusy}
-              className="h-9 px-3 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2 transition-all hover:border-slate-600 disabled:opacity-60"
+              className="w-full h-10 px-4 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2.5 transition-all hover:border-slate-600 disabled:opacity-60 shadow-sm"
             >
-              {oauthLoading === 'google' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+              {isGoogleLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
               ) : (
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
                     d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -462,27 +420,20 @@ export function SignupPage({ onNavigate }: SignupPageProps) {
                   />
                 </svg>
               )}
-              Google
+              Continue with Google
             </button>
+          </div>
 
+          {/* Sign In Link */}
+          <div className="pt-3 border-t border-slate-800 text-center text-xs text-slate-400">
+            Already have an enterprise account?{' '}
             <button
               type="button"
-              onClick={() => handleOAuth('github')}
+              onClick={() => onNavigate('/login')}
               disabled={isBusy}
-              className="h-9 px-3 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2 transition-all hover:border-slate-600 disabled:opacity-60"
+              className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold transition-colors"
             >
-              {oauthLoading === 'github' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-              ) : (
-                <svg className="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  />
-                </svg>
-              )}
-              GitHub
+              Sign In
             </button>
           </div>
         </Card>

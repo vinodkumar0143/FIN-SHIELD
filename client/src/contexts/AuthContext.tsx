@@ -26,7 +26,7 @@ interface AuthContextType {
     department?: string
     role?: UserRole
   }) => Promise<{ error: Error | null; needsEmailVerification?: boolean }>
-  loginWithOAuth: (provider: 'google' | 'github') => Promise<{ error: Error | null }>
+  loginWithOAuth: (provider: 'google') => Promise<{ error: Error | null }>
   resetPasswordForEmail: (email: string) => Promise<{ error: Error | null }>
   updatePassword: (password: string) => Promise<{ error: Error | null }>
   resendVerificationEmail: (email: string) => Promise<{ error: Error | null }>
@@ -42,17 +42,26 @@ export function formatAuthError(err: any): string {
   const message = typeof err === 'string' ? err : err.message || err.error_description || ''
   const lower = message.toLowerCase()
 
+  if (lower.includes('valid corporate email') || lower.includes('invalid email format')) {
+    return 'Please enter a valid corporate email address.'
+  }
+  if (lower.includes('email not found') || lower.includes('create an account first')) {
+    return 'Email not found. Please create an account first.'
+  }
+  if (lower.includes('incorrect password')) {
+    return 'Incorrect password. Please try again.'
+  }
   if (lower.includes('rate limit') || lower.includes('over_email_send_rate_limit') || lower.includes('rate_limit')) {
     return 'Email sending is temporarily limited. Please wait before requesting another verification email.'
   }
   if (lower.includes('too many') || lower.includes('429')) {
     return 'Too many authentication attempts. Please wait a while before trying again.'
   }
-  if (lower.includes('invalid login credentials') || lower.includes('invalid credentials')) {
-    return 'Email or password is incorrect.'
+  if (lower.includes('email not confirmed') || lower.includes('verify your email')) {
+    return 'Please verify your email before signing in.'
   }
-  if (lower.includes('email not confirmed')) {
-    return 'Please verify your email address before signing in.'
+  if (lower.includes('invalid login credentials') || lower.includes('invalid credentials')) {
+    return 'Incorrect password. Please try again.'
   }
   if (lower.includes('user already registered')) {
     return 'An account with this corporate email already exists.'
@@ -62,6 +71,9 @@ export function formatAuthError(err: any): string {
   }
   if (lower.includes('provider is not enabled') || lower.includes('unsupported provider') || lower.includes('validation_failed')) {
     return 'This OAuth provider is not configured in Supabase. Please contact your administrator or sign in with your corporate email.'
+  }
+  if (lower.includes('database error') || lower.includes('querying schema') || lower.includes('internal error')) {
+    return 'Authentication failed. Please verify your corporate credentials.'
   }
   return message || 'An unexpected authentication error occurred.'
 }
@@ -79,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [profile])
 
   // Fetch profile from public.profiles table
-  const fetchProfile = async (userId: string, emailFallback?: string): Promise<Profile | null> => {
+  const fetchProfile = async (userId: string, _emailFallback?: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -96,19 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return data
       }
 
-      // If user exists in Auth but not in profiles, synthesize a safe default
-      const defaultProfile: Profile = {
-        id: userId,
-        full_name: emailFallback?.split('@')[0] || 'User',
-        email: emailFallback || '',
-        role: 'EMPLOYEE',
-        department: 'Operations',
-        avatar_url: null,
-        status: 'ACTIVE',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-      return defaultProfile
+      // If user exists in Auth but not in profiles table, return null so that onboarding/context selection is accurately triggered
+      return null
     } catch (err) {
       console.error('[FIN-SHIELD AUTH] Unexpected profile retrieval error:', err)
       return null
@@ -181,6 +182,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
         setIsLoading(false)
+        const errMsg = error.message.toLowerCase()
+
+        // CASE D: Unverified email
+        if (errMsg.includes('email not confirmed')) {
+          return { error: new Error('Please verify your email before signing in.') }
+        }
+
+        // Differentiate "Email not found" vs "Incorrect password"
+        if (
+          errMsg.includes('invalid login credentials') ||
+          errMsg.includes('invalid credentials') ||
+          errMsg.includes('database error') ||
+          errMsg.includes('querying schema')
+        ) {
+          try {
+            const checkRes = await fetch(`/api/users/check-email?email=${encodeURIComponent(email.trim())}`)
+            if (checkRes.ok) {
+              const checkJson = await checkRes.json()
+              if (checkJson.success && checkJson.data) {
+                if (!checkJson.data.exists) {
+                  // CASE B: Email not found
+                  return { error: new Error('Email not found. Please create an account first.') }
+                } else {
+                  // CASE C: Wrong password
+                  return { error: new Error('Incorrect password. Please try again.') }
+                }
+              }
+            }
+          } catch (checkErr) {
+            console.warn('[FIN-SHIELD AUTH] check-email lookup notice:', checkErr)
+          }
+          return { error: new Error('Incorrect password. Please try again.') }
+        }
+
         return { error }
       }
 
@@ -276,7 +311,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // OAuth sign in
-  const loginWithOAuth = async (provider: 'google' | 'github'): Promise<{ error: Error | null }> => {
+  const loginWithOAuth = async (provider: 'google'): Promise<{ error: Error | null }> => {
     setIsLoading(true)
     try {
       const redirectUrl = `${window.location.origin}/auth/callback`

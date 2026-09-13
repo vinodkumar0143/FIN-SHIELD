@@ -10,6 +10,7 @@ import {
 import { Breadcrumb, type BreadcrumbItem } from '@/components/ui/Breadcrumb'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useAuth } from '@/contexts/AuthContext'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import { alertsService } from '@/services/alertsService'
 import { toast } from 'sonner'
 
@@ -70,6 +71,12 @@ export const TopBar: React.FC<TopBarProps> = ({
         >
           <Menu className="h-5 w-5" />
         </button>
+
+        {/* Mobile Compact Mark Branding */}
+        <div className="lg:hidden flex items-center gap-2">
+          <FinShieldLogo variant="compact" size="xs" />
+          <span className="font-mono text-xs font-bold text-white tracking-wider">FinShield</span>
+        </div>
 
         {/* Dynamic Breadcrumbs */}
         <div className="hidden sm:flex items-center min-w-0">

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Shield, Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
+import { Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth, formatAuthError } from '@/contexts/AuthContext'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import { AuthBackground } from './AuthBackground'
 import { toast } from 'sonner'
 
@@ -16,24 +17,32 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      onNavigate('/dashboard')
+      onNavigate('/select-context')
     }
   }, [isAuthenticated, onNavigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isSubmitting || oauthLoading) return
+    if (isSubmitting || isGoogleLoading) return
     setErrorMessage(null)
 
     const trimmedEmail = email.trim()
     if (!trimmedEmail || !password) {
       setErrorMessage('Please enter both corporate email and password.')
+      return
+    }
+
+    // CASE A: Validate email format before calling Supabase authentication
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please enter a valid corporate email address.')
+      toast.error('Please enter a valid corporate email address.')
       return
     }
 
@@ -46,18 +55,18 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
       setErrorMessage(userMessage)
       toast.error(userMessage)
     } else {
-      toast.success('Authenticated successfully. Welcome to FinShield.')
-      onNavigate('/dashboard')
+      toast.success('Authenticated successfully. Please select your workspace.')
+      onNavigate('/select-context')
     }
   }
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
-    if (isSubmitting || oauthLoading) return
+  const handleGoogleAuth = async () => {
+    if (isSubmitting || isGoogleLoading) return
     setErrorMessage(null)
-    setOauthLoading(provider)
+    setIsGoogleLoading(true)
 
-    const { error } = await loginWithOAuth(provider)
-    setOauthLoading(null)
+    const { error } = await loginWithOAuth('google')
+    setIsGoogleLoading(false)
 
     if (error) {
       const userMessage = formatAuthError(error)
@@ -66,7 +75,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
     }
   }
 
-  const isBusy = isSubmitting || oauthLoading !== null
+  const isBusy = isSubmitting || isGoogleLoading
 
   return (
     <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
@@ -74,12 +83,12 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* FinShield Branding Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-lg shadow-cyan-950/40 mb-1">
-            <Shield className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+        <div className="text-center space-y-2.5">
+          <div className="flex justify-center">
+            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
           </div>
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FIN-SHIELD</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-400 font-bold uppercase tracking-wider">
               ENTERPRISE
             </span>
@@ -99,13 +108,26 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
           </div>
 
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
+            <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex flex-col gap-2">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+              {errorMessage.includes('create an account') && (
+                <div className="pl-6">
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('/signup')}
+                    className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold inline-flex items-center gap-1 transition-colors"
+                  >
+                    Create Account Now →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} noValidate className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
@@ -195,18 +217,18 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
             </div>
           </div>
 
-          {/* OAuth Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Google OAuth Button - Full width */}
+          <div>
             <button
               type="button"
-              onClick={() => handleOAuth('google')}
+              onClick={handleGoogleAuth}
               disabled={isBusy}
-              className="h-9 px-3 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2 transition-all hover:border-slate-600 disabled:opacity-60"
+              className="w-full h-10 px-4 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2.5 transition-all hover:border-slate-600 disabled:opacity-60 shadow-sm"
             >
-              {oauthLoading === 'google' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+              {isGoogleLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
               ) : (
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
                     d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -225,27 +247,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
                   />
                 </svg>
               )}
-              Google
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleOAuth('github')}
-              disabled={isBusy}
-              className="h-9 px-3 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2 transition-all hover:border-slate-600 disabled:opacity-60"
-            >
-              {oauthLoading === 'github' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-              ) : (
-                <svg className="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                  />
-                </svg>
-              )}
-              GitHub
+              Continue with Google
             </button>
           </div>
 
