@@ -3,31 +3,31 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F19] disabled:pointer-events-none disabled:opacity-40 select-none text-xs tracking-wide cursor-pointer',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 select-none text-xs tracking-wide cursor-pointer font-sans',
   {
     variants: {
       variant: {
         default:
-          'bg-cyan-500 text-[#0B0F19] font-semibold hover:bg-cyan-400 active:scale-[0.98] shadow-[0_0_12px_rgba(6,182,212,0.3)] hover:shadow-[0_0_16px_rgba(6,182,212,0.5)]',
+          'bg-brand-cyan text-slate-950 font-semibold hover:bg-brand-cyan-hover active:scale-[0.98] shadow-subtle',
         primary:
-          'bg-cyan-500 text-[#0B0F19] font-semibold hover:bg-cyan-400 active:scale-[0.98] shadow-[0_0_12px_rgba(6,182,212,0.3)] hover:shadow-[0_0_16px_rgba(6,182,212,0.5)]',
+          'bg-brand-cyan text-slate-950 font-semibold hover:bg-brand-cyan-hover active:scale-[0.98] shadow-subtle',
         secondary:
-          'bg-[#111827] text-slate-100 border border-indigo-500/40 hover:bg-indigo-500/15 hover:border-indigo-400 active:scale-[0.98]',
+          'bg-surface-elevated text-slate-100 border border-border hover:bg-surface-highlight hover:border-border-elevated active:scale-[0.98]',
         outline:
-          'border border-slate-700 bg-transparent text-slate-200 hover:bg-slate-800 hover:border-slate-600 active:scale-[0.98]',
+          'border border-border bg-transparent text-slate-200 hover:bg-surface hover:text-slate-100 hover:border-border-elevated active:scale-[0.98]',
         ghost:
-          'bg-transparent text-slate-400 hover:text-slate-100 hover:bg-slate-800/60',
+          'bg-transparent text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight active:scale-[0.98]',
         danger:
-          'bg-rose-600 text-white font-semibold hover:bg-rose-500 active:scale-[0.98] shadow-[0_0_12px_rgba(239,68,68,0.3)]',
+          'bg-rose-600 text-white font-semibold hover:bg-rose-500 active:scale-[0.98]',
         dangerOutline:
-          'border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500 active:scale-[0.98]',
+          'border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/50 active:scale-[0.98]',
         cyber:
-          'bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 hover:from-cyan-500/30 hover:to-indigo-500/30',
+          'bg-surface-elevated text-brand-cyan border border-brand-cyan/30 hover:bg-surface-highlight hover:border-brand-cyan/50 active:scale-[0.98]',
       },
       size: {
         sm: 'h-7 px-2.5 text-[11px]',
-        md: 'h-9 px-3.5 text-xs',
-        lg: 'h-11 px-5 text-sm',
+        md: 'h-8.5 px-3.5 text-xs',
+        lg: 'h-10 px-5 text-sm',
         icon: 'h-8 w-8 p-0',
       },
     },

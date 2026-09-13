@@ -43,23 +43,23 @@ export const Dialog: React.FC<DialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Frosted Scrim Backdrop */}
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#0B0F19]/85 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
         onClick={() => onOpenChange(false)}
       />
 
-      {/* Dialog Surface (Level 3) */}
+      {/* Dialog Surface */}
       <div
         className={cn(
-          'relative w-full rounded-lg bg-[#111827] border border-indigo-500/30 p-6 shadow-command z-50 animate-in fade-in-0 zoom-in-95 duration-150',
+          'relative w-full rounded-xl bg-surface border border-border p-6 shadow-command z-50 animate-in fade-in-0 zoom-in-95 duration-150',
           maxWidths[maxWidth],
           className
         )}
       >
         <button
           onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+          className="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight transition-colors"
           aria-label="Close dialog"
         >
           <X className="h-4 w-4" />
@@ -68,12 +68,12 @@ export const Dialog: React.FC<DialogProps> = ({
         {(title || description) && (
           <div className="mb-4 space-y-1 pr-6">
             {title && (
-              <h2 className="text-base font-semibold text-slate-100 tracking-tight">
+              <h2 className="text-sm font-semibold text-slate-100 tracking-tight font-sans">
                 {title}
               </h2>
             )}
             {description && (
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed font-sans">
                 {description}
               </p>
             )}

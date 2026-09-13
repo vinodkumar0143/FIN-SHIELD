@@ -16,33 +16,33 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variantStyles: Record<string, string> = {
-    default: 'bg-slate-800 text-slate-200 border-slate-700',
-    neutral: 'bg-slate-800 text-slate-300 border-slate-700',
-    outline: 'bg-transparent text-slate-300 border-slate-700',
-    success: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-    warning: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    error: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-    info: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-    cyan: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/40',
-    indigo: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40',
+    default: 'bg-surface-elevated text-slate-200 border-border',
+    neutral: 'bg-surface-subtle text-muted-foreground border-border',
+    outline: 'bg-transparent text-muted-foreground border-border',
+    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+    error: 'bg-rose-500/10 text-rose-400 border-rose-500/25',
+    info: 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/25',
+    cyan: 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/25',
+    indigo: 'bg-brand-indigo/10 text-brand-indigo border-brand-indigo/25',
   }
 
   const sizeStyles = {
-    sm: 'text-[9px] px-1.5 py-0.2',
+    sm: 'text-[9px] px-1.5 py-0.5',
     md: 'text-[10px] px-2 py-0.5',
     lg: 'text-xs px-2.5 py-1',
   }
 
   const dotColors: Record<string, string> = {
     default: 'bg-slate-400',
-    neutral: 'bg-slate-400',
-    outline: 'bg-slate-400',
-    success: 'bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)]',
-    warning: 'bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.8)]',
-    error: 'bg-rose-400 shadow-[0_0_6px_rgba(239,68,68,0.8)]',
-    info: 'bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.8)]',
-    cyan: 'bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.8)]',
-    indigo: 'bg-indigo-400 shadow-[0_0_6px_rgba(99,102,241,0.8)]',
+    neutral: 'bg-muted-foreground',
+    outline: 'bg-muted-foreground',
+    success: 'bg-emerald-400',
+    warning: 'bg-amber-400',
+    error: 'bg-rose-400',
+    info: 'bg-brand-cyan',
+    cyan: 'bg-brand-cyan',
+    indigo: 'bg-brand-indigo',
   }
 
   return (
@@ -80,7 +80,7 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
 }) => {
   const theme = getRiskTheme(score !== undefined ? score : (level || 'LOW'))
   const sizeStyles = {
-    sm: 'text-[9px] px-2 py-0.2',
+    sm: 'text-[9px] px-2 py-0.5',
     md: 'text-[10px] px-2.5 py-0.5',
     lg: 'text-xs px-3 py-1',
   }
@@ -100,8 +100,41 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
       {showDot && <span className={cn('h-1.5 w-1.5 rounded-full', theme.dot)} aria-hidden="true" />}
       <span>{theme.label}</span>
       {showScore && score !== undefined && (
-        <span className="ml-1 pl-1 border-l border-current/30 opacity-90">{score}/100</span>
+        <span className="ml-1 pl-1 border-l border-current/25 opacity-90 tabular-nums">{score}/100</span>
       )}
     </span>
+  )
+}
+
+export interface StatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  status: string
+  size?: 'sm' | 'md' | 'lg'
+  dot?: boolean
+}
+
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  status,
+  size = 'md',
+  dot = true,
+  className,
+  ...props
+}) => {
+  const normalized = status.toUpperCase().replace(/\s+/g, '_')
+  
+  let variant: BadgeProps['variant'] = 'neutral'
+  if (['APPROVED', 'CLEARED', 'RESOLVED', 'ACTIVE', 'VERIFIED', 'PASS', 'SUCCESS'].includes(normalized)) {
+    variant = 'success'
+  } else if (['PENDING', 'IN_REVIEW', 'ON_HOLD', 'UNDER_AUDIT', 'FLAGGED', 'WARNING'].includes(normalized)) {
+    variant = 'warning'
+  } else if (['REJECTED', 'BLOCKED', 'FAILED', 'ESCALATED', 'ERROR', 'CRITICAL'].includes(normalized)) {
+    variant = 'error'
+  } else if (['INFO', 'PROCESSING', 'QUEUED'].includes(normalized)) {
+    variant = 'info'
+  }
+
+  return (
+    <Badge variant={variant} size={size} dot={dot} className={className} {...props}>
+      {status.replace(/_/g, ' ')}
+    </Badge>
   )
 }

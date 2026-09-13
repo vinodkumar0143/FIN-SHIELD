@@ -9,6 +9,10 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 // Auth & Foundation (Instant load)
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SignupPage } from '@/features/auth/SignupPage'
+import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from '@/features/auth/ResetPasswordPage'
+import { AuthCallbackPage } from '@/features/auth/AuthCallbackPage'
+import { ProfileCompletionPage } from '@/features/auth/ProfileCompletionPage'
 
 // Lazy loaded routes for optimal bundle chunking and performance (Phase 11D)
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })))
@@ -72,7 +76,7 @@ function RouteLoadingFallback() {
 }
 
 function AppContent() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, profile } = useAuth()
   const [currentPath, setCurrentPath] = useState<string>(window.location.pathname)
 
   useEffect(() => {
@@ -89,16 +93,31 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Handle root redirect
+  const PUBLIC_ROUTES = [
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
+    '/auth/callback'
+  ]
+
+  // Handle root redirect and auth guards
   useEffect(() => {
     if (!isLoading) {
-      if (!isAuthenticated && currentPath !== '/login' && currentPath !== '/signup') {
-        handleNavigate('/login')
-      } else if (isAuthenticated && (currentPath === '/' || currentPath === '/login' || currentPath === '/signup')) {
-        handleNavigate('/dashboard')
+      if (!isAuthenticated) {
+        if (!PUBLIC_ROUTES.includes(currentPath)) {
+          handleNavigate('/login')
+        }
+      } else {
+        const needsProfileCompletion = profile && (!profile.department || !profile.role)
+        if (needsProfileCompletion && currentPath !== '/profile-completion' && currentPath !== '/auth/callback') {
+          handleNavigate('/profile-completion')
+        } else if (currentPath === '/' || currentPath === '/login' || currentPath === '/signup') {
+          handleNavigate('/dashboard')
+        }
       }
     }
-  }, [isAuthenticated, isLoading, currentPath])
+  }, [isAuthenticated, isLoading, currentPath, profile])
 
   // Public standalone pages (rendered outside AppShell)
   if (currentPath === '/login') {
@@ -107,6 +126,22 @@ function AppContent() {
 
   if (currentPath === '/signup') {
     return <SignupPage onNavigate={handleNavigate} />
+  }
+
+  if (currentPath === '/forgot-password') {
+    return <ForgotPasswordPage onNavigate={handleNavigate} />
+  }
+
+  if (currentPath === '/reset-password') {
+    return <ResetPasswordPage onNavigate={handleNavigate} />
+  }
+
+  if (currentPath === '/auth/callback') {
+    return <AuthCallbackPage onNavigate={handleNavigate} />
+  }
+
+  if (currentPath === '/profile-completion') {
+    return <ProfileCompletionPage onNavigate={handleNavigate} />
   }
 
   // Render active protected route inside AppShell

@@ -7,19 +7,33 @@ export function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('animate-pulse rounded bg-slate-800/60', className)}
+      className={cn('animate-pulse rounded-md bg-surface-highlight/50', className)}
       {...props}
     />
   )
 }
 
-export function LoadingState({ message = 'Loading financial telemetry...' }: { message?: string }) {
+export function LoadingState({ message = 'Loading financial intelligence...' }: { message?: string }) {
   return (
     <div className="flex flex-col items-center justify-center p-8 space-y-3">
-      <div className="h-7 w-7 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent shadow-[0_0_12px_rgba(6,182,212,0.4)]" />
-      <span className="text-xs font-mono text-slate-400 tracking-wide uppercase">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-cyan border-t-transparent" />
+      <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
         {message}
       </span>
+    </div>
+  )
+}
+
+export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+  return (
+    <div className="space-y-2 p-2" role="status" aria-label="Loading table records">
+      {Array.from({ length: rows }).map((_, r) => (
+        <div key={r} className="flex items-center gap-4 py-2 border-b border-border/40">
+          {Array.from({ length: cols }).map((_, c) => (
+            <Skeleton key={c} className="h-4 flex-1" />
+          ))}
+        </div>
+      ))}
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { CommandMenu } from '@/components/ui/CommandMenu'
 import { Drawer } from '@/components/ui/Drawer'
-import { Clock } from 'lucide-react'
+import { Clock, ArrowRight } from 'lucide-react'
 import { RiskBadge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 
@@ -23,38 +23,40 @@ export const AppShell: React.FC<AppShellProps> = ({
   const [commandOpen, setCommandOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
-  // Derive dynamic breadcrumbs
+  // Derive dynamic breadcrumbs with professional financial terminology
   const getBreadcrumbs = () => {
     const segments = currentPath.split('/').filter(Boolean)
-    const crumbs = [{ label: 'FIN-SHIELD', href: '/dashboard' }]
+    const crumbs = [{ label: 'FINSHIELD', href: '/dashboard' }]
 
     if (segments.length === 0 || segments[0] === 'dashboard') {
-      crumbs.push({ label: 'Executive Dashboard', href: '/dashboard' })
+      crumbs.push({ label: 'Command Center', href: '/dashboard' })
     } else {
       const categoryMap: Record<string, string> = {
-        invoices: 'Invoices & Ingestion',
-        transactions: 'Live Transactions',
-        vendors: 'Vendor Risk Profiles',
-        budgets: 'Department Budgets',
-        investigations: 'AI Investigations',
+        invoices: 'Invoices',
+        transactions: 'Transactions',
+        vendors: 'Vendors',
+        budgets: 'Budgets & Variances',
+        investigations: 'Investigations',
         risk: 'Risk Center',
         forecasting: 'Cash Forecasting',
-        assistant: 'AI Copilot',
-        search: 'Natural Language Search',
-        approvals: 'Approvals Queue',
-        workflows: 'EnterPro Workflows',
-        escalations: 'Incident Escalations',
-        analytics: 'Predictive Analytics',
+        assistant: 'Ask FinShield',
+        search: 'Search',
+        approvals: 'Approvals',
+        workflows: 'Workflows',
+        holds: 'Payment Holds',
+        escalations: 'Escalations',
+        analytics: 'Analytics',
         reports: 'Compliance Reports',
         alerts: 'Alert Rules',
         audit: 'Audit Trail',
         users: 'Users & Roles',
-        integrations: 'Platform Integrations',
+        integrations: 'Integrations',
         settings: 'Settings',
+        'design-system': 'Design System',
       }
 
       crumbs.push({
-        label: categoryMap[segments[0]] || segments[0].toUpperCase(),
+        label: categoryMap[segments[0]] || segments[0].charAt(0).toUpperCase() + segments[0].slice(1),
         href: `/${segments[0]}`,
       })
     }
@@ -62,11 +64,11 @@ export const AppShell: React.FC<AppShellProps> = ({
     return crumbs
   }
 
-  // Static mock alerts for the Notification Drawer
+  // Active risk items for the Notification Drawer
   const alerts = [
     {
       id: 'al-1',
-      title: 'Invoice INV-28491 Flagged for Critical Risk',
+      title: 'Invoice INV-28491 Flagged for High Risk',
       vendor: 'ABC Supplies Pvt Ltd',
       amount: '₹4,82,000',
       time: '12m ago',
@@ -75,7 +77,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     },
     {
       id: 'al-2',
-      title: 'Disbursement Account Altered within 96h',
+      title: 'Disbursement Account Altered within 72h',
       vendor: 'ABC Supplies Pvt Ltd',
       amount: 'N/A',
       time: '24m ago',
@@ -84,7 +86,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     },
     {
       id: 'al-3',
-      title: 'Quarterly Operations Budget Overrun Risk (+18.5%)',
+      title: 'Quarterly Operations Budget Overrun (+18.5%)',
       vendor: 'Operations Dept',
       amount: '₹3,02,000',
       time: '1h ago',
@@ -103,7 +105,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   ]
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0B0F19] text-[#F8FAFC]">
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar Navigation */}
       <Sidebar
         currentPath={currentPath}
@@ -115,7 +117,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       />
 
       {/* Main Column */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Top Bar */}
         <TopBar
           breadcrumbs={getBreadcrumbs()}
@@ -125,14 +127,14 @@ export const AppShell: React.FC<AppShellProps> = ({
         />
 
         {/* Dynamic Page Container */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-[#0B0F19]">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">
           <div className="max-w-7xl mx-auto space-y-6">
             {children}
           </div>
         </main>
       </div>
 
-      {/* Command Search Modal Foundation (⌘K) */}
+      {/* Command Palette Modal (⌘K / Ctrl+K) */}
       <CommandMenu
         open={commandOpen}
         onOpenChange={setCommandOpen}
@@ -142,33 +144,33 @@ export const AppShell: React.FC<AppShellProps> = ({
         }}
       />
 
-      {/* Live Notifications Drawer */}
+      {/* Live Financial Alerts & Risk Feed Drawer */}
       <Drawer
         open={notificationsOpen}
         onOpenChange={setNotificationsOpen}
-        title="Live Threat & Anomaly Feed"
-        description="Real-time multi-source risk triggers detected by the continuous audit sentinel."
+        title="Financial Risk & Activity Feed"
+        description="Real-time multi-signal anomalies and payment holds requiring investigation."
         width="md"
       >
         <div className="space-y-3">
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className="p-3.5 rounded-md border border-[#1E293B] bg-[#0F131D] hover:border-cyan-500/40 transition-all space-y-2 group"
+              className="p-3.5 rounded-lg border border-border bg-surface hover:border-border-elevated transition-colors space-y-2 group"
             >
               <div className="flex items-start justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-100 font-mono">
+                <span className="text-xs font-semibold text-slate-100 font-sans">
                   {alert.title}
                 </span>
-                <RiskBadge score={alert.score} showScore={false} />
+                <RiskBadge score={alert.score} showScore={false} size="sm" />
               </div>
 
-              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
                 <span>{alert.vendor}</span>
-                <span className="text-slate-200 font-bold">{alert.amount}</span>
+                <span className="text-slate-100 font-semibold">{alert.amount}</span>
               </div>
 
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500">
+              <div className="pt-2 border-t border-border flex items-center justify-between text-[10px] font-mono text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" /> {alert.time}
                 </span>
@@ -177,9 +179,10 @@ export const AppShell: React.FC<AppShellProps> = ({
                     onNavigate('/investigations')
                     setNotificationsOpen(false)
                   }}
-                  className="text-cyan-400 hover:text-cyan-300 font-medium group-hover:underline"
+                  className="text-brand-cyan hover:text-brand-cyan-bright font-medium flex items-center gap-1 group-hover:underline"
                 >
-                  Investigate →
+                  <span>Investigate</span>
+                  <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
             </div>

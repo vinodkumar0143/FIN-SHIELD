@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import {
   Shield,
@@ -24,7 +24,8 @@ import {
   Sliders,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
+  ChevronDown,
+  Lock,
 } from 'lucide-react'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useAuth } from '@/contexts/AuthContext'
@@ -43,6 +44,7 @@ export interface NavItem {
 export interface NavSection {
   title: string
   items: NavItem[]
+  isCollapsible?: boolean
 }
 
 export interface SidebarProps {
@@ -63,8 +65,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { hasPermission } = useAuth()
+  const [showWorkspace, setShowWorkspace] = useState(false)
 
-  React.useEffect(() => {
+  // Auto-expand workspace if user is currently on a workspace route
+  const workspaceRoutes = useMemo(() => [
+    '/transactions',
+    '/budgets',
+    '/risk',
+    '/forecasting',
+    '/holds',
+    '/escalations',
+    '/analytics',
+    '/reports',
+    '/alerts',
+    '/audit',
+    '/users',
+    '/integrations',
+    '/settings',
+    '/design-system',
+  ], [])
+
+  useEffect(() => {
+    if (workspaceRoutes.some(route => currentPath === route || currentPath.startsWith(route + '/'))) {
+      setShowWorkspace(true)
+    }
+  }, [currentPath, workspaceRoutes])
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && mobileOpen) {
         onCloseMobile()
@@ -74,13 +101,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [mobileOpen, onCloseMobile])
 
-  const sections: NavSection[] = [
+  // Primary restructured financial navigation architecture
+  const primarySections: NavSection[] = [
     {
       title: 'OVERVIEW',
       items: [
         {
           id: 'dashboard',
-          label: 'Executive Dashboard',
+          label: 'Command Center',
           href: '/dashboard',
           icon: <LayoutDashboard className="h-4 w-4" />,
           permission: 'dashboard.view',
@@ -88,8 +116,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      title: 'FINANCIAL INTELLIGENCE',
+      title: 'INVESTIGATE',
       items: [
+        {
+          id: 'investigations',
+          label: 'Investigations',
+          href: '/investigations',
+          icon: <SearchCode className="h-4 w-4" />,
+          badge: '12',
+          badgeVariant: 'warning',
+          permission: 'investigations.view',
+        },
         {
           id: 'invoices',
           label: 'Invoices',
@@ -100,189 +137,243 @@ export const Sidebar: React.FC<SidebarProps> = ({
           permission: 'invoices.view',
         },
         {
-          id: 'transactions',
-          label: 'Transactions',
-          href: '/transactions',
-          icon: <ArrowLeftRight className="h-4 w-4" />,
-          badge: 'LIVE',
-          badgeVariant: 'info',
-          permission: 'transactions.view',
-        },
-        {
           id: 'vendors',
           label: 'Vendors',
           href: '/vendors',
           icon: <Building2 className="h-4 w-4" />,
           permission: 'vendors.view',
         },
-        {
-          id: 'budgets',
-          label: 'Budgets & Variances',
-          href: '/budgets',
-          icon: <PieChart className="h-4 w-4" />,
-          permission: 'budgets.view',
-        },
       ],
     },
     {
-      title: 'AI INTELLIGENCE',
+      title: 'OPERATE',
       items: [
         {
-          id: 'investigations',
-          label: 'AI Investigations',
-          href: '/investigations',
-          icon: <SearchCode className="h-4 w-4 text-cyan-400" />,
-          badge: '12 Active',
-          badgeVariant: 'warning',
-          permission: 'investigations.view',
+          id: 'workflows',
+          label: 'Workflows',
+          href: '/workflows',
+          icon: <Workflow className="h-4 w-4" />,
+          permission: 'workflows.view',
         },
-        {
-          id: 'risk',
-          label: 'Risk Center',
-          href: '/risk',
-          icon: <ShieldAlert className="h-4 w-4 text-orange-400" />,
-          permission: 'risk.view',
-        },
-        {
-          id: 'forecasting',
-          label: 'Cash Forecasting',
-          href: '/forecasting',
-          icon: <TrendingUp className="h-4 w-4 text-emerald-400" />,
-          permission: 'forecasting.view',
-        },
-        {
-          id: 'assistant',
-          label: 'AI Copilot',
-          href: '/assistant',
-          icon: <Bot className="h-4 w-4 text-indigo-400" />,
-          permission: 'assistant.use',
-        },
-        {
-          id: 'search',
-          label: 'NL Financial Search',
-          href: '/search',
-          icon: <Search className="h-4 w-4 text-cyan-400" />,
-          permission: 'assistant.use',
-        },
-      ],
-    },
-    {
-      title: 'OPERATIONS',
-      items: [
         {
           id: 'approvals',
-          label: 'Approvals Queue',
+          label: 'Approvals',
           href: '/approvals',
           icon: <CheckSquare className="h-4 w-4" />,
           badge: '9',
           badgeVariant: 'warning',
           permission: 'approvals.view',
         },
-        {
-          id: 'workflows',
-          label: 'EnterPro Workflows',
-          href: '/workflows',
-          icon: <Workflow className="h-4 w-4" />,
-          permission: 'workflows.view',
-        },
-        {
-          id: 'escalations',
-          label: 'Escalations',
-          href: '/escalations',
-          icon: <AlertOctagon className="h-4 w-4 text-rose-400" />,
-          permission: 'escalations.view',
-        },
       ],
     },
     {
-      title: 'INSIGHTS',
+      title: 'DISCOVER',
       items: [
         {
-          id: 'analytics',
-          label: 'Predictive Analytics',
-          href: '/analytics',
-          icon: <BarChart3 className="h-4 w-4" />,
-          permission: 'analytics.view',
+          id: 'search',
+          label: 'Search',
+          href: '/search',
+          icon: <Search className="h-4 w-4" />,
+          permission: 'assistant.use',
         },
         {
-          id: 'reports',
-          label: 'Compliance Reports',
-          href: '/reports',
-          icon: <FileSpreadsheet className="h-4 w-4" />,
-          permission: 'reports.view',
-        },
-        {
-          id: 'alerts',
-          label: 'Alert Rules',
-          href: '/alerts',
-          icon: <BellRing className="h-4 w-4" />,
-          permission: 'alerts.view',
-        },
-      ],
-    },
-    {
-      title: 'SYSTEM',
-      items: [
-        {
-          id: 'audit',
-          label: 'Audit Trail',
-          href: '/audit',
-          icon: <History className="h-4 w-4" />,
-          permission: 'audit.view',
-        },
-        {
-          id: 'users',
-          label: 'Users & Roles',
-          href: '/users',
-          icon: <Users className="h-4 w-4" />,
-          permission: 'users.view',
-        },
-        {
-          id: 'integrations',
-          label: 'Integrations',
-          href: '/integrations',
-          icon: <Cpu className="h-4 w-4" />,
-          permission: 'integrations.view',
-        },
-        {
-          id: 'settings',
-          label: 'Settings',
-          href: '/settings',
-          icon: <Sliders className="h-4 w-4" />,
-          permission: 'settings.view',
+          id: 'assistant',
+          label: 'Ask FinShield',
+          href: '/assistant',
+          icon: <Bot className="h-4 w-4" />,
+          permission: 'assistant.use',
         },
       ],
     },
   ]
 
-  const filteredSections = useMemo(() => {
-    return sections
+  // Secondary capabilities preserved and cleanly partitioned
+  const workspaceSection: NavSection = {
+    title: 'WORKSPACE & SYSTEM',
+    isCollapsible: true,
+    items: [
+      {
+        id: 'transactions',
+        label: 'Transactions',
+        href: '/transactions',
+        icon: <ArrowLeftRight className="h-4 w-4" />,
+        permission: 'transactions.view',
+      },
+      {
+        id: 'budgets',
+        label: 'Budgets & Variances',
+        href: '/budgets',
+        icon: <PieChart className="h-4 w-4" />,
+        permission: 'budgets.view',
+      },
+      {
+        id: 'risk',
+        label: 'Risk Center',
+        href: '/risk',
+        icon: <ShieldAlert className="h-4 w-4" />,
+        permission: 'risk.view',
+      },
+      {
+        id: 'forecasting',
+        label: 'Cash Forecasting',
+        href: '/forecasting',
+        icon: <TrendingUp className="h-4 w-4" />,
+        permission: 'forecasting.view',
+      },
+      {
+        id: 'holds',
+        label: 'Payment Holds',
+        href: '/holds',
+        icon: <Lock className="h-4 w-4" />,
+        permission: 'holds.view',
+      },
+      {
+        id: 'escalations',
+        label: 'Escalations',
+        href: '/escalations',
+        icon: <AlertOctagon className="h-4 w-4" />,
+        permission: 'escalations.view',
+      },
+      {
+        id: 'analytics',
+        label: 'Analytics',
+        href: '/analytics',
+        icon: <BarChart3 className="h-4 w-4" />,
+        permission: 'analytics.view',
+      },
+      {
+        id: 'reports',
+        label: 'Compliance Reports',
+        href: '/reports',
+        icon: <FileSpreadsheet className="h-4 w-4" />,
+        permission: 'reports.view',
+      },
+      {
+        id: 'alerts',
+        label: 'Alert Rules',
+        href: '/alerts',
+        icon: <BellRing className="h-4 w-4" />,
+        permission: 'alerts.view',
+      },
+      {
+        id: 'audit',
+        label: 'Audit Trail',
+        href: '/audit',
+        icon: <History className="h-4 w-4" />,
+        permission: 'audit.view',
+      },
+      {
+        id: 'users',
+        label: 'Users & Roles',
+        href: '/users',
+        icon: <Users className="h-4 w-4" />,
+        permission: 'users.view',
+      },
+      {
+        id: 'integrations',
+        label: 'Integrations',
+        href: '/integrations',
+        icon: <Cpu className="h-4 w-4" />,
+        permission: 'integrations.view',
+      },
+      {
+        id: 'settings',
+        label: 'Settings',
+        href: '/settings',
+        icon: <Sliders className="h-4 w-4" />,
+        permission: 'settings.view',
+      },
+    ],
+  }
+
+  const filteredPrimarySections = useMemo(() => {
+    return primarySections
       .map(sec => ({
         ...sec,
         items: sec.items.filter(item => !item.permission || hasPermission(item.permission))
       }))
       .filter(sec => sec.items.length > 0)
-  }, [hasPermission])
+  }, [primarySections, hasPermission])
+
+  const filteredWorkspaceItems = useMemo(() => {
+    return workspaceSection.items.filter(item => !item.permission || hasPermission(item.permission))
+  }, [workspaceSection.items, hasPermission])
+
+  const renderNavButton = (item: NavItem) => {
+    const isActive = currentPath === item.href || (item.href !== '/dashboard' && currentPath.startsWith(item.href + '/'))
+
+    const button = (
+      <button
+        key={item.id}
+        onClick={() => {
+          onNavigate(item.href)
+          onCloseMobile()
+        }}
+        className={cn(
+          'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-colors duration-150 relative text-left select-none',
+          isActive
+            ? 'bg-brand-cyan/10 text-slate-100 font-medium border-l-2 border-brand-cyan'
+            : 'text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight/60',
+          collapsed && 'justify-center px-2'
+        )}
+      >
+        <span
+          className={cn(
+            'flex-shrink-0 transition-colors',
+            isActive ? 'text-brand-cyan' : 'text-muted-foreground'
+          )}
+        >
+          {item.icon}
+        </span>
+
+        {!collapsed && (
+          <span className="truncate flex-1 font-sans">
+            {item.label}
+          </span>
+        )}
+
+        {!collapsed && item.badge && (
+          <span
+            className={cn(
+              'px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold',
+              item.badgeVariant === 'error' && 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+              item.badgeVariant === 'warning' && 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+              (!item.badgeVariant || item.badgeVariant === 'default') && 'bg-surface-elevated text-muted-foreground border border-border'
+            )}
+          >
+            {item.badge}
+          </span>
+        )}
+      </button>
+    )
+
+    return collapsed ? (
+      <Tooltip key={item.id} content={item.label} side="right">
+        {button}
+      </Tooltip>
+    ) : (
+      button
+    )
+  }
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-[#111827] border-r border-[#1E293B] select-none">
+    <div className="flex h-full flex-col bg-surface border-r border-border select-none">
       {/* Brand Header */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-[#1E293B]">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-border">
         <div
           onClick={() => onNavigate('/dashboard')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <div className="h-8 w-8 rounded bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center text-[#0B0F19] shadow-[0_0_14px_rgba(6,182,212,0.4)] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.7)] transition-all">
-            <Shield className="h-5 w-5 fill-[#0B0F19]" />
+          <div className="h-8 w-8 rounded-lg bg-surface-elevated border border-border-elevated flex items-center justify-center text-brand-cyan transition-colors group-hover:border-brand-cyan/50">
+            <Shield className="h-4 w-4 fill-brand-cyan/20" />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-mono text-sm font-bold tracking-wider text-slate-100 flex items-center gap-1.5">
-                FIN-SHIELD
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
+              <span className="font-mono text-sm font-bold tracking-wider text-slate-100">
+                FINSHIELD
               </span>
-              <span className="text-[9px] font-mono tracking-widest uppercase text-cyan-400/90 font-medium">
-                AI RISK INTELLIGENCE
+              <span className="text-[10px] font-mono tracking-wider text-muted-foreground">
+                Financial Investigation Center
               </span>
             </div>
           )}
@@ -291,7 +382,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!collapsed && (
           <button
             onClick={onToggleCollapse}
-            className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors hidden lg:block"
+            className="p-1 rounded text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight transition-colors hidden lg:block"
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
           >
@@ -302,7 +393,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Mobile Close Button */}
         <button
           onClick={onCloseMobile}
-          className="p-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors lg:hidden"
+          className="p-1.5 rounded text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight transition-colors lg:hidden"
           title="Close navigation"
           aria-label="Close navigation"
         >
@@ -310,109 +401,81 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      {/* Tenant Indicator (Expanded) */}
+      {/* Tenant Indicator */}
       {!collapsed && (
-        <div className="px-4 py-2 border-b border-[#1E293B]/70 bg-[#0B0F19]/60 flex items-center justify-between">
-          <span className="text-[10px] font-mono text-slate-400 font-medium truncate">
+        <div className="px-4 py-2 border-b border-border/80 bg-surface-subtle flex items-center justify-between">
+          <span className="text-[10px] font-mono text-muted-foreground font-medium truncate">
             TITAN GLOBAL CORP
           </span>
-          <span className="px-1.5 py-0.2 rounded bg-cyan-500/15 border border-cyan-500/30 text-[9px] font-mono text-cyan-400 font-semibold uppercase">
+          <span className="px-1.5 py-0.5 rounded bg-surface border border-border text-[9px] font-mono text-slate-300 uppercase">
             ENTERPRISE
           </span>
         </div>
       )}
 
-      {/* Navigation Sections */}
+      {/* Navigation Body */}
       <div className="flex-1 overflow-y-auto px-2 py-3 space-y-4">
-        {filteredSections.map((section, sIdx) => (
-          <div key={sIdx} className="space-y-0.5">
+        {/* Primary Sections (Overview, Investigate, Operate, Discover) */}
+        {filteredPrimarySections.map((section, sIdx) => (
+          <div key={sIdx} className="space-y-1">
             {!collapsed && (
-              <div className="px-2.5 py-1 text-[10px] font-mono font-semibold tracking-wider text-slate-500 uppercase">
+              <div className="px-3 py-1 text-[10px] font-mono font-semibold tracking-wider text-muted-foreground/70 uppercase">
                 {section.title}
               </div>
             )}
-            {section.items.map((item) => {
-              const isActive = currentPath === item.href
-
-              const navButton = (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onNavigate(item.href)
-                    onCloseMobile()
-                  }}
-                  className={cn(
-                    'w-full flex items-center gap-2.5 px-2.5 py-2 rounded text-xs transition-all duration-150 group relative',
-                    isActive
-                      ? 'bg-slate-800/90 text-cyan-300 font-medium border border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.12)]'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50',
-                    collapsed && 'justify-center px-2'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'transition-colors',
-                      isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-slate-200'
-                    )}
-                  >
-                    {item.icon}
-                  </span>
-
-                  {!collapsed && (
-                    <span className="truncate flex-1 text-left font-sans">
-                      {item.label}
-                    </span>
-                  )}
-
-                  {!collapsed && item.badge && (
-                    <span
-                      className={cn(
-                        'px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold uppercase tracking-wider',
-                        item.badgeVariant === 'error' && 'bg-rose-500/20 text-rose-400 border border-rose-500/40',
-                        item.badgeVariant === 'warning' && 'bg-amber-500/20 text-amber-400 border border-amber-500/40',
-                        item.badgeVariant === 'info' && 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40',
-                        (!item.badgeVariant || item.badgeVariant === 'default') && 'bg-slate-800 text-slate-400 border border-slate-700'
-                      )}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-
-                  {isActive && (
-                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-cyan-400 rounded-r shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                  )}
-                </button>
-              )
-
-              return collapsed ? (
-                <Tooltip key={item.id} content={item.label} side="right">
-                  {navButton}
-                </Tooltip>
-              ) : (
-                navButton
-              )
-            })}
+            <div className="space-y-0.5">
+              {section.items.map(renderNavButton)}
+            </div>
           </div>
         ))}
+
+        {/* Secondary Workspace & Capabilities */}
+        {filteredWorkspaceItems.length > 0 && (
+          <div className="space-y-1 pt-2 border-t border-border/60">
+            {!collapsed ? (
+              <button
+                onClick={() => setShowWorkspace(!showWorkspace)}
+                className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-mono font-semibold tracking-wider text-muted-foreground/70 hover:text-slate-200 uppercase transition-colors"
+              >
+                <span>WORKSPACE &amp; SYSTEM</span>
+                <ChevronDown
+                  className={cn(
+                    'h-3.5 w-3.5 transition-transform duration-150',
+                    showWorkspace ? 'rotate-0' : '-rotate-90'
+                  )}
+                />
+              </button>
+            ) : null}
+
+            {(showWorkspace || collapsed) && (
+              <div className="space-y-0.5">
+                {filteredWorkspaceItems.map(renderNavButton)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Sidebar Footer */}
-      <div className="p-3 border-t border-[#1E293B] bg-[#0B0F19]/80 space-y-2">
+      {/* Sidebar Footer — Clean Status Indicator */}
+      <div className="p-3 border-t border-border bg-surface-subtle">
         {!collapsed ? (
-          <div className="rounded border border-indigo-500/25 bg-indigo-950/20 p-2 text-[10px] font-mono">
-            <div className="flex items-center gap-1.5 text-indigo-300 font-semibold">
-              <Sparkles className="h-3 w-3 text-indigo-400" />
-              <span>FinLLM-v4 Operational</span>
+          <div className="rounded-lg border border-border bg-surface p-2.5 text-[10px] font-mono">
+            <div className="flex items-center justify-between text-slate-300">
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="font-semibold">Engine Active</span>
+              </div>
+              <span className="text-muted-foreground">24ms</span>
             </div>
-            <div className="mt-1 flex items-center justify-between text-slate-400 text-[9px]">
-              <span>Latency: 24ms</span>
-              <span className="text-emerald-400 font-bold">100% ONLINE</span>
+            <div className="mt-1 text-[9px] text-muted-foreground flex justify-between items-center">
+              <span>Continuous Audit</span>
+              <span className="text-slate-400">v4.2</span>
             </div>
           </div>
         ) : (
           <button
             onClick={onToggleCollapse}
-            className="w-full p-2 rounded text-slate-400 hover:text-slate-100 hover:bg-slate-800 flex items-center justify-center transition-colors"
+            className="w-full p-2 rounded-lg text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight flex items-center justify-center transition-colors"
             title="Expand sidebar"
           >
             <ChevronRight className="h-4 w-4" />
@@ -424,7 +487,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Persistent Sidebar */}
       <aside
         className={cn(
           'hidden lg:flex flex-col flex-shrink-0 transition-all duration-200 z-30',
@@ -434,11 +497,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer Sidebar */}
+      {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-[#0B0F19]/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm"
             onClick={onCloseMobile}
           />
           <div className="relative w-64 max-w-xs flex-1 z-50">

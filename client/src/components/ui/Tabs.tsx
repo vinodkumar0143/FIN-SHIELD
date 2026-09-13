@@ -47,7 +47,7 @@ export const TabsList: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <div
     className={cn(
-      'inline-flex items-center gap-1 rounded bg-[#111827] border border-[#1E293B] p-1 text-slate-400',
+      'inline-flex items-center gap-1 rounded-lg bg-surface-subtle border border-border p-1 text-muted-foreground select-none',
       className
     )}
     {...props}
@@ -76,10 +76,10 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       type="button"
       onClick={() => ctx.setActiveTab(value)}
       className={cn(
-        'px-3 py-1.5 rounded text-xs font-medium transition-all select-none',
+        'px-3 py-1.5 rounded-md text-xs font-medium transition-colors select-none font-sans cursor-pointer',
         isActive
-          ? 'bg-slate-800 text-cyan-300 font-semibold shadow-sm border border-slate-700/60'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40',
+          ? 'bg-surface-elevated text-slate-100 font-semibold shadow-subtle border border-border'
+          : 'text-muted-foreground hover:text-slate-200 hover:bg-surface-highlight/50',
         className
       )}
       {...props}
