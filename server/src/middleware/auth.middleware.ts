@@ -11,6 +11,7 @@ export interface AuthenticatedUser {
   email: string
   role: UserRole
   profile?: ProfileRow
+  user_metadata?: Record<string, any>
 }
 
 export interface AuthenticatedRequest<
@@ -51,13 +52,15 @@ export async function requireAuth(
   try {
     let userId: string | null = null
     let userEmail: string = ''
+    let userMetadata: Record<string, any> = {}
 
     // 1. Primary verification via Supabase GoTrue Auth API
     try {
       const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
       if (user && !error) {
         userId = user.id
-        userEmail = user.email || ''
+        userEmail = user.email || user.user_metadata?.email || ''
+        userMetadata = user.user_metadata || {}
       }
     } catch (gotrueErr: any) {
       console.warn('[AUTH MIDDLEWARE] GoTrue lookup notice:', gotrueErr.message)
@@ -72,7 +75,8 @@ export async function requireAuth(
           const now = Math.floor(Date.now() / 1000)
           if (payload.sub && (!payload.exp || payload.exp > now)) {
             userId = payload.sub
-            userEmail = payload.email || ''
+            userEmail = payload.email || payload.user_metadata?.email || ''
+            userMetadata = payload.user_metadata || {}
           }
         }
       } catch {
@@ -101,7 +105,8 @@ export async function requireAuth(
       id: userId,
       email: userEmail || profile?.email || '',
       role,
-      profile: profile || undefined
+      profile: profile || undefined,
+      user_metadata: userMetadata
     }
 
     next()

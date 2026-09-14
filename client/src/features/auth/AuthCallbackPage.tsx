@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -12,14 +12,30 @@ interface AuthCallbackPageProps {
 }
 
 export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
-  const { refreshProfile, logout } = useAuth()
+  const { session: contextSession, user: contextUser, profile: contextProfile, setAuthData, logout } = useAuth()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const isProcessedRef = useRef(false)
 
   useEffect(() => {
     let isMounted = true
+    const startTime = performance.now()
+
+    // 8-second safety timeout to prevent infinite loading state (Requirement 8)
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted && !isProcessedRef.current) {
+        setErrorMsg('Google authentication is taking longer than expected.')
+      }
+    }, 8000)
 
     async function handleAuthCallback() {
+      // Prevent duplicate executions in React StrictMode or re-renders
+      if (isProcessedRef.current) return
+
       try {
+        if (import.meta.env.DEV) {
+          console.debug(`[FIN-SHIELD AUTH] Google callback loaded (+${Math.round(performance.now() - startTime)}ms)`)
+        }
+
         // 1. Check for error in query or hash params (e.g. user canceled OAuth)
         const params = new URLSearchParams(window.location.search)
         const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'))
@@ -27,54 +43,95 @@ export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
         const error = params.get('error') || hashParams.get('error')
 
         if (error || errorDescription) {
+          clearTimeout(safetyTimeout)
           if (isMounted) {
             setErrorMsg(formatAuthError(errorDescription || error))
           }
           return
         }
 
-        // 2. Allow Supabase to establish or read the active session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        // 2. Fast Session Resolution (Requirement 3 & 4)
+        // Prefer already-established session if available rather than repeating network requests
+        let activeSession = contextSession
+        let activeUser = contextUser || activeSession?.user
 
-        if (sessionError) {
-          if (isMounted) setErrorMsg(formatAuthError(sessionError))
-          return
+        if (!activeUser) {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+          if (sessionError) {
+            clearTimeout(safetyTimeout)
+            if (isMounted) setErrorMsg(formatAuthError(sessionError))
+            return
+          }
+
+          if (session?.user) {
+            activeSession = session
+            activeUser = session.user
+          }
         }
 
-        let activeUser = session?.user
+        // If session is resolving via PKCE in the immediate microtask, attach a short listener
         if (!activeUser) {
-          // Wait up to 3 seconds for onAuthStateChange to fire if PKCE exchange is in flight
-          const authUser = await new Promise<any>((resolve) => {
-            const timer = setTimeout(() => resolve(null), 3000)
-            const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, curSession) => {
+          const authSession = await new Promise<any>((resolve) => {
+            const shortTimer = setTimeout(() => {
+              sub?.unsubscribe()
+              resolve(null)
+            }, 2500)
+
+            const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, curSession) => {
               if (curSession?.user) {
-                clearTimeout(timer)
-                subscription.unsubscribe()
-                resolve(curSession.user)
+                clearTimeout(shortTimer)
+                sub.unsubscribe()
+                resolve(curSession)
               }
             })
           })
-          activeUser = authUser
+
+          if (authSession?.user) {
+            activeSession = authSession
+            activeUser = authSession.user
+          }
         }
 
-        if (!activeUser) {
-          if (isMounted) setErrorMsg('Unable to retrieve authenticated OAuth session. Please sign in again.')
+        if (!activeUser || !activeSession) {
+          clearTimeout(safetyTimeout)
+          if (isMounted) {
+            setErrorMsg('Unable to retrieve authenticated OAuth session. Please sign in again.')
+          }
           return
         }
 
-        // 3. Load user's FinShield profile from public.profiles
-        const { data: profile, error: profileErr } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', activeUser.id)
-          .maybeSingle()
-
-        if (profileErr) {
-          console.warn('[FIN-SHIELD AUTH] Google OAuth profile lookup warning:', profileErr.message)
+        if (import.meta.env.DEV) {
+          console.debug(`[FIN-SHIELD AUTH] Session detected (+${Math.round(performance.now() - startTime)}ms)`)
         }
 
-        // 4. Verify account status if profile exists
+        // 3. ONE Profile Lookup (Requirement 2, 5 & 6)
+        let profile = (contextProfile?.id === activeUser.id) ? contextProfile : null
+
+        if (!profile) {
+          if (import.meta.env.DEV) {
+            console.debug(`[FIN-SHIELD AUTH] Profile lookup started (+${Math.round(performance.now() - startTime)}ms)`)
+          }
+
+          const { data: dbProfile, error: profileErr } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', activeUser.id)
+            .maybeSingle()
+
+          if (profileErr) {
+            console.warn('[FIN-SHIELD AUTH] Google OAuth profile lookup warning:', profileErr.message)
+          }
+          profile = dbProfile || null
+
+          if (import.meta.env.DEV) {
+            console.debug(`[FIN-SHIELD AUTH] Profile lookup completed (+${Math.round(performance.now() - startTime)}ms)`)
+          }
+        }
+
+        // 4. Verify account status if profile exists (Requirement 5 & 16)
         if (profile && (profile.status === 'INACTIVE' || profile.status === 'SUSPENDED')) {
+          clearTimeout(safetyTimeout)
           await logout()
           if (isMounted) {
             setErrorMsg('Your FinShield account is not currently active. Please contact your system administrator.')
@@ -82,21 +139,29 @@ export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
           return
         }
 
-        // 5. Check if profile is incomplete or missing Department/Role
+        // 5. Check if profile is incomplete or missing Department/Role (Requirement 5, 14 & 15)
         const isProfileIncomplete = !profile || !profile.department || !profile.role
 
-        await refreshProfile()
+        // 6. Synchronously update AuthContext so downstream routes have session & profile immediately (Requirement 7)
+        setAuthData(activeSession, profile)
+
+        isProcessedRef.current = true
+        clearTimeout(safetyTimeout)
 
         if (!isMounted) return
 
+        if (import.meta.env.DEV) {
+          console.debug(`[FIN-SHIELD AUTH] Navigation -> ${isProfileIncomplete ? '/select-context' : '/dashboard'} (+${Math.round(performance.now() - startTime)}ms)`)
+        }
+
+        // 7. Immediate Navigation without any waterfall delays
         if (isProfileIncomplete) {
-          // First-time Google user or incomplete profile -> Department + Role Selection
           onNavigate('/select-context')
         } else {
-          // Profile is complete, active, and valid -> Dashboard
           onNavigate('/dashboard')
         }
       } catch (err: any) {
+        clearTimeout(safetyTimeout)
         console.error('[FIN-SHIELD AUTH] OAuth callback handling failure:', err)
         if (isMounted) setErrorMsg(formatAuthError(err))
       }
@@ -106,8 +171,9 @@ export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
 
     return () => {
       isMounted = false
+      clearTimeout(safetyTimeout)
     }
-  }, [onNavigate, refreshProfile, logout])
+  }, [contextSession, contextUser, contextProfile, onNavigate, setAuthData, logout])
 
   return (
     <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">

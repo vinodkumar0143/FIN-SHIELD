@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Building, UserCheck, ArrowRight, AlertCircle, Loader2, LogOut } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { useAuth, formatAuthError } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import { apiClient } from '@/services/apiClient'
 import type { UserRole } from '@/lib/permissions'
@@ -34,7 +34,7 @@ function getRoleLabel(roleValue: string): string {
 }
 
 export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
-  const { user, profile, updateProfile, refreshProfile, logout, isLoading } = useAuth()
+  const { user, profile, refreshProfile, logout, isLoading } = useAuth()
   const [selectedDepartment, setSelectedDepartment] = useState<string>(profile?.department || 'Finance')
   const [selectedRole, setSelectedRole] = useState<string>(profile?.role || 'ADMIN')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -84,38 +84,28 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
     setIsSubmitting(true)
 
     try {
-      // HACKATHON PROTOTYPE: Any authenticated user may select any Department + Role.
-      // Persist selection via backend context endpoint
-      try {
-        await apiClient.post('/api/users/context', {
-          department: selectedDepartment,
-          role: selectedRole
-        })
-      } catch (backendErr: any) {
-        console.warn('[FIN-SHIELD RBAC] Backend context route fallback:', backendErr.message)
-        const { error: fallbackErr } = await updateProfile({
-          department: selectedDepartment,
-          role: selectedRole as UserRole,
-          status: 'ACTIVE'
-        })
+      // Persist chosen Department and Role securely via backend context endpoint
+      // Uses server-side supabaseAdmin so browser RLS INSERT policy is not violated
+      const updatedProfile = await apiClient.post('/api/users/context', {
+        department: selectedDepartment,
+        role: selectedRole
+      })
 
-        if (fallbackErr) {
-          setIsSubmitting(false)
-          const userMessage = formatAuthError(fallbackErr)
-          setErrorMessage(userMessage)
-          toast.error(userMessage)
-          return
-        }
-      }
+      // Synchronously update local AuthContext profile with zero extra network roundtrips
+      await refreshProfile(updatedProfile)
 
-      await refreshProfile()
       setIsSubmitting(false)
       toast.success(`Workspace confirmed: ${selectedDepartment} / ${getRoleLabel(selectedRole)}`)
       onNavigate('/dashboard')
     } catch (err: any) {
       setIsSubmitting(false)
       console.error('[FIN-SHIELD RBAC] Context selection error:', err)
-      setErrorMessage(err.message || 'Validation failed. Please try again.')
+      const userMessage =
+        err?.message && !err.message.toLowerCase().includes('row-level security') && !err.message.toLowerCase().includes('postgres')
+          ? err.message
+          : 'Unable to save your workspace selection. Please try again.'
+      setErrorMessage(userMessage)
+      toast.error(userMessage)
     }
   }
 

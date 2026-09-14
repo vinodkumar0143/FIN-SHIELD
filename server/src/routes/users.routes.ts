@@ -3,6 +3,7 @@ import { UsersService } from '../services/users.service.js'
 import { requireAuth, requirePermission, type AuthenticatedRequest } from '../middleware/auth.middleware.js'
 import type { UserRole } from '../lib/permissions.js'
 import { supabaseAdmin } from '../config/supabase.js'
+import type { Database } from '../types/database.types.js'
 
 export function createUsersRouter(): Router {
   const router = Router()
@@ -182,17 +183,16 @@ export function createUsersRouter(): Router {
 
   /**
    * POST /api/users/context
-   * HACKATHON PROTOTYPE: Allows any authenticated user to select and persist
-   * any available Department and Role (Admin, Finance Manager, Finance Analyst, Employee).
-   * Note: This permissive configuration is specifically for the hackathon prototype.
+   * Allows authenticated users to select and persist their Department and Role.
+   * Uses server-side supabaseAdmin to safely create/update public.profiles without browser RLS blocks.
    */
   router.post('/context', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const actor = req.user!
-      const { department, role } = req.body
+      // Requirement: Profile row ID MUST come strictly from authenticated JWT user ID. Never accept client body ID.
+      const targetUserId = actor.id
 
-      const validDepartments = ['Finance', 'Treasury', 'Forensics', 'Operations', 'Procurement']
-      const validRoles: UserRole[] = ['ADMIN', 'FINANCE_MANAGER', 'FINANCE_ANALYST', 'EMPLOYEE']
+      const { department, role } = req.body
 
       if (!department || !role) {
         res.status(400).json({
@@ -202,42 +202,197 @@ export function createUsersRouter(): Router {
         return
       }
 
-      if (!validDepartments.includes(department)) {
+      // 1. Validate and normalize Department against allowed list
+      const ALLOWED_DEPARTMENTS = ['Finance', 'Treasury', 'Forensics', 'Operations', 'Procurement']
+      const matchedDept = ALLOWED_DEPARTMENTS.find(
+        d => d.toLowerCase() === String(department).trim().toLowerCase()
+      )
+
+      if (!matchedDept) {
         res.status(400).json({
           success: false,
-          error: { code: 'INVALID_DEPARTMENT', message: `Invalid department '${department}' specified.` }
+          error: {
+            code: 'INVALID_DEPARTMENT',
+            message: `Invalid department '${department}'. Allowed: ${ALLOWED_DEPARTMENTS.join(', ')}`
+          }
         })
         return
       }
 
-      if (!validRoles.includes(role as UserRole)) {
+      // 2. Validate and normalize Role against allowed list (supports both Enum and Display Name)
+      const ROLE_MAP: Record<string, UserRole> = {
+        'ADMIN': 'ADMIN',
+        'Admin': 'ADMIN',
+        'admin': 'ADMIN',
+        'FINANCE_MANAGER': 'FINANCE_MANAGER',
+        'Finance Manager': 'FINANCE_MANAGER',
+        'finance_manager': 'FINANCE_MANAGER',
+        'FINANCE_ANALYST': 'FINANCE_ANALYST',
+        'Finance Analyst': 'FINANCE_ANALYST',
+        'finance_analyst': 'FINANCE_ANALYST',
+        'EMPLOYEE': 'EMPLOYEE',
+        'Employee': 'EMPLOYEE',
+        'employee': 'EMPLOYEE'
+      }
+
+      const normalizedRole = ROLE_MAP[String(role).trim()]
+      if (!normalizedRole) {
         res.status(400).json({
           success: false,
-          error: { code: 'INVALID_ROLE', message: `Invalid role '${role}' specified.` }
+          error: {
+            code: 'INVALID_ROLE',
+            message: `Invalid role '${role}'. Allowed: Admin, Finance Manager, Finance Analyst, Employee`
+          }
         })
         return
       }
 
-      const existingProfile = actor.profile
-      const fullName = existingProfile?.full_name || actor.email.split('@')[0] || 'User'
-
-      // Persist chosen Department and Role to public.profiles
-      const { data: updatedProfile, error: upsertErr } = await supabaseAdmin
+      // 3. Inspect existing profile using privileged server supabaseAdmin client
+      const { data: existingProfile } = await supabaseAdmin
         .from('profiles')
-        .upsert({
-          id: actor.id,
-          full_name: fullName,
-          email: actor.email,
-          department,
-          role: role as UserRole,
-          status: existingProfile?.status || 'ACTIVE',
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single()
+        .select('*')
+        .eq('id', targetUserId)
+        .maybeSingle()
 
-      if (upsertErr) {
-        throw upsertErr
+      // 4. Security Check: Inactive / Suspended account defense
+      // CASE 3 & CASE 4: Existing INACTIVE or SUSPENDED profile must NEVER be reactivated or modified through context selection.
+      if (existingProfile) {
+        if (existingProfile.status === 'INACTIVE') {
+          res.status(403).json({
+            success: false,
+            error: {
+              code: 'ACCOUNT_INACTIVE',
+              message: 'Your FinShield account is not currently active. Please contact your administrator.'
+            }
+          })
+          return
+        }
+
+        if (existingProfile.status === 'SUSPENDED') {
+          res.status(403).json({
+            success: false,
+            error: {
+              code: 'ACCOUNT_INACTIVE',
+              message: 'Your FinShield account is suspended. Please contact your administrator.'
+            }
+          })
+          return
+        }
+
+        if (existingProfile.status !== 'ACTIVE') {
+          res.status(403).json({
+            success: false,
+            error: {
+              code: 'ACCOUNT_INACTIVE',
+              message: 'Your FinShield account is not active. Please contact your administrator.'
+            }
+          })
+          return
+        }
+      }
+
+      // 5. Ensure valid email for NOT NULL / UNIQUE constraint on public.profiles
+      let userEmail = existingProfile?.email || actor.email
+      if (!userEmail) {
+        try {
+          const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(targetUserId)
+          if (authUserData?.user?.email) {
+            userEmail = authUserData.user.email
+          }
+        } catch (authErr: any) {
+          console.warn('[USERS CONTEXT] Fallback auth email lookup notice:', authErr.message)
+        }
+      }
+
+      if (!userEmail) {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'MISSING_EMAIL',
+            message: 'User email could not be resolved from authenticated session.'
+          }
+        })
+        return
+      }
+
+      // 6. Resolve user name and avatar from existing profile or auth metadata
+      const userMeta = actor.user_metadata || {}
+      const fullName =
+        existingProfile?.full_name ||
+        userMeta.full_name ||
+        userMeta.name ||
+        userEmail.split('@')[0] ||
+        'User'
+      const avatarUrl =
+        existingProfile?.avatar_url ||
+        userMeta.avatar_url ||
+        userMeta.picture ||
+        null
+
+      let updatedProfile: Database['public']['Tables']['profiles']['Row'] | null = null
+
+      if (existingProfile) {
+        // CASE 2 — EXISTING ACTIVE PROFILE:
+        // Update department and role only.
+        // Strictly PRESERVE existing status = 'ACTIVE'. Do NOT modify status. Do NOT create duplicate rows.
+        const { data, error: updateErr } = await supabaseAdmin
+          .from('profiles')
+          .update({
+            department: matchedDept,
+            role: normalizedRole,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', targetUserId)
+          .select()
+          .single()
+
+        if (updateErr) {
+          console.error('[Users API context update error]', updateErr)
+          throw updateErr
+        }
+        updatedProfile = data
+      } else {
+        // CASE 1 — NEW PROFILE:
+        // No public.profiles row exists for authenticated JWT user.
+        // Insert new profile with status = 'ACTIVE'.
+        const { data, error: insertErr } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: targetUserId,
+            full_name: fullName,
+            email: userEmail,
+            department: matchedDept,
+            role: normalizedRole,
+            avatar_url: avatarUrl,
+            status: 'ACTIVE',
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (insertErr) {
+          // If concurrent insert occurred, perform safe update on department/role only
+          if (insertErr.code === '23505') {
+            const { data: fallbackData, error: fallbackErr } = await supabaseAdmin
+              .from('profiles')
+              .update({
+                department: matchedDept,
+                role: normalizedRole,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', targetUserId)
+              .select()
+              .single()
+
+            if (fallbackErr) throw fallbackErr
+            updatedProfile = fallbackData
+          } else {
+            console.error('[Users API context insert error]', insertErr)
+            throw insertErr
+          }
+        } else {
+          updatedProfile = data
+        }
       }
 
       res.json({

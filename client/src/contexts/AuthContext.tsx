@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react'
+import React, { createContext, useContext, useEffect, useState, useMemo, useRef } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
 import type { Database } from '../types/database.types'
@@ -32,7 +32,8 @@ interface AuthContextType {
   resendVerificationEmail: (email: string) => Promise<{ error: Error | null }>
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>
   logout: () => Promise<void>
-  refreshProfile: () => Promise<void>
+  refreshProfile: (preloadedProfile?: Profile | null) => Promise<void>
+  setAuthData: (newSession: Session, newProfile: Profile | null) => void
   hasPermission: (permission: Permission) => boolean
   hasAnyPermission: (permissions: Permission[]) => boolean
 }
@@ -90,38 +91,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return (profile?.role as UserRole) || 'EMPLOYEE'
   }, [profile])
 
-  // Fetch profile from public.profiles table
+  // Cache for in-flight and recent profile fetches to eliminate duplicate parallel network requests
+  const profileCache = useRef<Map<string, { profile: Profile | null; timestamp: number }>>(new Map())
+  const inFlightProfileFetches = useRef<Map<string, Promise<Profile | null>>>(new Map())
+
+  // Fetch profile from public.profiles table with deduplication and in-flight sharing
   const fetchProfile = async (userId: string, _emailFallback?: string): Promise<Profile | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
+    if (!userId) return null
 
-      if (error) {
-        console.warn('[FIN-SHIELD AUTH] Profile query error:', error.message)
+    // 1. Check recent memory cache (within 4 seconds)
+    const cached = profileCache.current.get(userId)
+    if (cached && Date.now() - cached.timestamp < 4000) {
+      return cached.profile
+    }
+
+    // 2. Check if identical query is already in-flight
+    const inFlight = inFlightProfileFetches.current.get(userId)
+    if (inFlight) {
+      return inFlight
+    }
+
+    // 3. Initiate single network request
+    const fetchPromise = (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle()
+
+        if (error) {
+          console.warn('[FIN-SHIELD AUTH] Profile query error:', error.message)
+          return null
+        }
+
+        profileCache.current.set(userId, { profile: data || null, timestamp: Date.now() })
+        return data || null
+      } catch (err) {
+        console.error('[FIN-SHIELD AUTH] Unexpected profile retrieval error:', err)
         return null
+      } finally {
+        inFlightProfileFetches.current.delete(userId)
       }
+    })()
 
-      if (data) {
-        return data
+    inFlightProfileFetches.current.set(userId, fetchPromise)
+    return fetchPromise
+  }
+
+  // Refresh profile explicitly, with optional preloaded profile for zero-latency handoffs
+  const refreshProfile = async (preloadedProfile?: Profile | null) => {
+    if (preloadedProfile !== undefined) {
+      setProfile(preloadedProfile)
+      const targetId = user?.id || session?.user?.id
+      if (targetId) {
+        profileCache.current.set(targetId, { profile: preloadedProfile, timestamp: Date.now() })
       }
-
-      // If user exists in Auth but not in profiles table, return null so that onboarding/context selection is accurately triggered
-      return null
-    } catch (err) {
-      console.error('[FIN-SHIELD AUTH] Unexpected profile retrieval error:', err)
-      return null
+      return
+    }
+    const targetUserId = user?.id || session?.user?.id
+    if (targetUserId) {
+      profileCache.current.delete(targetUserId)
+      const p = await fetchProfile(targetUserId, user?.email || session?.user?.email)
+      setProfile(p)
     }
   }
 
-  // Refresh profile explicitly
-  const refreshProfile = async () => {
-    if (user?.id) {
-      const p = await fetchProfile(user.id, user.email)
-      setProfile(p)
+  // Synchronously update session, user, profile, and loading state for immediate transitions
+  const setAuthData = (newSession: Session, newProfile: Profile | null) => {
+    setSession(newSession)
+    setUser(newSession.user)
+    setProfile(newProfile)
+    if (newSession.user?.id) {
+      profileCache.current.set(newSession.user.id, { profile: newProfile, timestamp: Date.now() })
     }
+    setIsLoading(false)
   }
 
   // Initialize auth session on mount & subscribe to changes
@@ -429,6 +473,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('[FIN-SHIELD AUTH] SignOut error:', err)
     } finally {
+      profileCache.current.clear()
+      inFlightProfileFetches.current.clear()
       setUser(null)
       setSession(null)
       setProfile(null)
@@ -457,6 +503,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateProfile,
         logout,
         refreshProfile,
+        setAuthData,
         hasPermission,
         hasAnyPermission
       }}
