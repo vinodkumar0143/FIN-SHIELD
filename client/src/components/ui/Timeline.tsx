@@ -19,28 +19,28 @@ export interface TimelineProps {
 
 export const Timeline: React.FC<TimelineProps> = ({ items, className }) => {
   return (
-    <div className={cn('relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-800', className)}>
+    <div className={cn('relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-border', className)}>
       {items.map((item) => {
         const statusConfigs = {
           completed: {
-            dotBg: 'bg-emerald-500 text-[#0B0F19]',
+            dotBg: 'bg-emerald-500 text-slate-950',
             icon: <Check className="h-3 w-3 stroke-[3]" />,
-            borderColor: 'border-emerald-500/40',
+            borderColor: 'border-emerald-500/30',
           },
           'in-progress': {
-            dotBg: 'bg-cyan-500 text-[#0B0F19] animate-pulse',
+            dotBg: 'bg-brand-cyan text-slate-950',
             icon: <Clock className="h-3 w-3" />,
-            borderColor: 'border-cyan-500/40',
+            borderColor: 'border-brand-cyan/30',
           },
           flagged: {
             dotBg: 'bg-rose-500 text-white',
             icon: <AlertTriangle className="h-3 w-3" />,
-            borderColor: 'border-rose-500/40',
+            borderColor: 'border-rose-500/30',
           },
           pending: {
-            dotBg: 'bg-slate-800 text-slate-500 border border-slate-700',
+            dotBg: 'bg-surface-elevated text-muted-foreground border border-border',
             icon: null,
-            borderColor: 'border-slate-800',
+            borderColor: 'border-border',
           },
         }
 
@@ -51,7 +51,7 @@ export const Timeline: React.FC<TimelineProps> = ({ items, className }) => {
             {/* Status node */}
             <div
               className={cn(
-                'absolute -left-[29px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow',
+                'absolute -left-[29px] top-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-subtle',
                 config.dotBg
               )}
             >
@@ -59,27 +59,27 @@ export const Timeline: React.FC<TimelineProps> = ({ items, className }) => {
             </div>
 
             {/* Content card */}
-            <div className="rounded border border-[#1E293B] bg-[#111827] p-3 transition-colors hover:border-slate-700">
+            <div className="rounded-xl border border-border bg-surface p-3.5 transition-colors hover:border-border-elevated shadow-subtle">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-100 font-mono">
+                <span className="text-xs font-semibold text-slate-100 font-sans">
                   {item.title}
                 </span>
                 {item.timestamp && (
-                  <span className="text-[10px] font-mono text-slate-500">
+                  <span className="text-[10px] font-mono text-muted-foreground">
                     {item.timestamp}
                   </span>
                 )}
               </div>
 
               {item.description && (
-                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed font-sans">
                   {item.description}
                 </p>
               )}
 
               {item.badge && (
-                <div className="mt-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+                <div className="mt-2.5">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-subtle border border-border text-muted-foreground">
                     {item.badge}
                   </span>
                 </div>

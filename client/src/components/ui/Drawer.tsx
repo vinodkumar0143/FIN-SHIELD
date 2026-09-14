@@ -46,34 +46,35 @@ export const Drawer: React.FC<DrawerProps> = ({
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#0B0F19]/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
         onClick={() => onOpenChange(false)}
       />
 
       <div className={cn('fixed inset-y-0 flex max-w-full', side === 'right' ? 'right-0 pl-10' : 'left-0 pr-10')}>
         <div
           className={cn(
-            'w-screen bg-[#111827] border-l border-[#1E293B] shadow-2xl flex flex-col',
+            'w-screen bg-surface border-l border-border shadow-2xl flex flex-col',
             widths[width],
             side === 'left' && 'border-r border-l-0',
             className
           )}
         >
           {/* Drawer Header */}
-          <div className="p-5 border-b border-[#1E293B] flex items-center justify-between">
+          <div className="p-5 border-b border-border flex items-center justify-between">
             <div>
               {title && (
-                <h3 className="text-sm font-semibold text-slate-100 uppercase tracking-wide font-mono">
+                <h3 className="text-sm font-semibold text-slate-100 uppercase tracking-wider font-mono">
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+                <p className="text-xs text-muted-foreground mt-1 font-sans leading-relaxed">{description}</p>
               )}
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="rounded p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+              className="rounded-lg p-1.5 text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight transition-colors"
+              aria-label="Close drawer"
             >
               <X className="h-4 w-4" />
             </button>

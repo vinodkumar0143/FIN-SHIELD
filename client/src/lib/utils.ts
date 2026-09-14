@@ -8,9 +8,9 @@ export function cn(...inputs: ClassValue[]) {
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | 'low' | 'medium' | 'high' | 'critical'
 
 export function getRiskLevelFromScore(score: number): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
-  if (score >= 80) return 'CRITICAL'
-  if (score >= 60) return 'HIGH'
-  if (score >= 30) return 'MEDIUM'
+  if (score >= 85) return 'CRITICAL'
+  if (score >= 70) return 'HIGH'
+  if (score >= 40) return 'MEDIUM'
   return 'LOW'
 }
 
@@ -21,55 +21,81 @@ export function getRiskTheme(levelOrScore: RiskLevel | number) {
   switch (level) {
     case 'CRITICAL':
       return {
-        label: 'CRITICAL BREACH',
+        label: 'CRITICAL RISK',
         level: 'CRITICAL',
         color: '#EF4444',
         text: 'text-rose-400',
         bg: 'bg-rose-500/10',
-        border: 'border-rose-500/35',
-        badge: 'bg-rose-500/15 border-rose-500/40 text-rose-400',
+        border: 'border-rose-500/30',
+        badge: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
         ring: 'stroke-rose-500',
-        dot: 'bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]',
+        dot: 'bg-rose-500',
       }
     case 'HIGH':
       return {
-        label: 'HIGH ELEVATION',
+        label: 'HIGH RISK',
         level: 'HIGH',
-        color: '#F97316',
-        text: 'text-orange-400',
-        bg: 'bg-orange-500/10',
-        border: 'border-orange-500/35',
-        badge: 'bg-orange-500/15 border-orange-500/40 text-orange-400',
-        ring: 'stroke-orange-500',
-        dot: 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.8)]',
+        color: '#EF4444',
+        text: 'text-rose-400',
+        bg: 'bg-rose-500/10',
+        border: 'border-rose-500/30',
+        badge: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
+        ring: 'stroke-rose-500',
+        dot: 'bg-rose-500',
       }
     case 'MEDIUM':
       return {
-        label: 'MEDIUM CAUTION',
+        label: 'MEDIUM RISK',
         level: 'MEDIUM',
         color: '#F59E0B',
         text: 'text-amber-400',
         bg: 'bg-amber-500/10',
-        border: 'border-amber-500/35',
-        badge: 'bg-amber-500/15 border-amber-500/40 text-amber-400',
+        border: 'border-amber-500/30',
+        badge: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
         ring: 'stroke-amber-500',
-        dot: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]',
+        dot: 'bg-amber-500',
       }
     case 'LOW':
     default:
       return {
-        label: 'LOW / CLEAR',
+        label: 'LOW RISK',
         level: 'LOW',
-        color: '#10B981',
+        color: '#00B87C',
         text: 'text-emerald-400',
         bg: 'bg-emerald-500/10',
-        border: 'border-emerald-500/35',
-        badge: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400',
+        border: 'border-emerald-500/30',
+        badge: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
         ring: 'stroke-emerald-500',
-        dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]',
+        dot: 'bg-emerald-500',
       }
   }
 }
+
+export const FIN_COLORS = {
+  navy: '#0B1F3A',
+  navyDeep: '#061120',
+  navySurface: '#0E274A',
+  navyElevated: '#13335F',
+  green: '#00B87C',
+  gold: '#D4AF37',
+  cyan: '#0EA5E9',
+  neutral: '#F7F9FC',
+  neutralMuted: '#94A3B8',
+  danger: '#EF4444',
+  warning: '#F59E0B',
+  border: '#16365C',
+} as const
+
+export const CHART_PALETTE = {
+  primary: '#00B87C',   // Growth Green
+  cyan: '#0EA5E9',      // Technology Cyan
+  gold: '#D4AF37',      // Intelligence Gold
+  danger: '#EF4444',    // Risk Red
+  warning: '#F59E0B',   // Review Amber
+  muted: '#1E4675',     // Subdued Navy
+  grid: '#16365C',      // Border Grid
+  text: '#94A3B8',      // Muted Cool Gray
+} as const
 
 export function formatCurrency(amount: number, currency: string = 'INR'): string {
   if (currency === 'INR') {

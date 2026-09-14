@@ -165,16 +165,16 @@ export function BudgetsPage({ onNavigate }: BudgetsPageProps) {
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f293d" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#16365C" vertical={false} />
                 <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 11 }} angle={-15} textAnchor="end" />
                 <YAxis stroke="#64748b" tickFormatter={v => `₹${(v / 100000).toFixed(0)}L`} tick={{ fontSize: 11 }} />
                 <Tooltip
                   formatter={(val: any) => formatCurrency(Number(val) || 0)}
-                  contentStyle={{ backgroundColor: '#0B0F19', borderColor: '#1f293d', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#0B1F3A', borderColor: '#16365C', borderRadius: '8px', color: '#F7F9FC' }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12, paddingTop: '10px' }} />
-                <Bar dataKey="Allocated" fill="#38bdf8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Spent" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Allocated" fill="#0EA5E9" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Spent" fill="#00B87C" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

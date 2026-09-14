@@ -196,33 +196,33 @@ export function ForecastingPage({ onNavigate: _ }: ForecastingPageProps) {
               <AreaChart data={dataPoints} margin={{ top: 10, right: 10, left: 15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="inflowGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#00B87C" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#00B87C" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="outflowGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
-                <XAxis dataKey="date" stroke="#6b7280" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#16365C" vertical={false} />
+                <XAxis dataKey="date" stroke="#64748B" fontSize={11} tickLine={false} />
                 <YAxis
-                  stroke="#6b7280"
+                  stroke="#64748B"
                   fontSize={11}
                   tickLine={false}
                   tickFormatter={val => `₹${val / 100000}L`}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '8px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#0B1F3A', borderColor: '#16365C', borderRadius: '8px', fontSize: '11px', color: '#F7F9FC' }}
                   formatter={(val: any) => [formatCurrency(Number(val) || 0), '']}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                <Area type="monotone" dataKey="inflow" name="Projected Inflows" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#inflowGrad)" />
+                <Area type="monotone" dataKey="inflow" name="Projected Inflows" stroke="#00B87C" strokeWidth={2} fillOpacity={1} fill="url(#inflowGrad)" />
                 <Area
                   type="monotone"
                   dataKey={applyHoldsScenario ? 'outflowWithHolds' : 'outflow'}
-                  name={applyHoldsScenario ? 'Outflows (With EnterPro Holds)' : 'Outflows (Unrestricted)'}
-                  stroke={applyHoldsScenario ? '#06b6d4' : '#f43f5e'}
+                  name={applyHoldsScenario ? 'Outflows (With FinShield Holds)' : 'Outflows (Unrestricted)'}
+                  stroke={applyHoldsScenario ? '#0EA5E9' : '#EF4444'}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#outflowGrad)"

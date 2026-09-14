@@ -14,11 +14,11 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-md border transition-all duration-200',
+          'rounded-xl border transition-colors duration-150',
           elevated
-            ? 'bg-[#1F2937] border-[#334155]'
-            : 'bg-[#111827] border-[#1E293B]',
-          hoverGlow && 'hover:border-cyan-500/50 hover:shadow-[0_0_14px_rgba(6,182,212,0.12)]',
+            ? 'bg-surface-elevated border-border-elevated shadow-panel'
+            : 'bg-surface border-border shadow-subtle',
+          hoverGlow && 'hover:border-border-elevated',
           className
         )}
         style={borderColor ? { borderColor } : undefined}
@@ -40,7 +40,7 @@ CardHeader.displayName = 'CardHeader'
 
 export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn('text-xs font-mono font-medium uppercase tracking-wider text-slate-400', className)} {...props} />
+    <h3 ref={ref} className={cn('text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground', className)} {...props} />
   )
 )
 CardTitle.displayName = 'CardTitle'
@@ -82,28 +82,28 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <Card className={cn('p-4 relative overflow-hidden group', className)}>
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-medium truncate">
+        <span className="text-[11px] font-sans font-medium uppercase tracking-wider text-muted-foreground truncate">
           {title}
         </span>
         {icon && (
-          <div className="h-7 w-7 rounded bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-cyan-400 group-hover:text-cyan-300 transition-colors">
+          <div className="h-7 w-7 rounded-lg bg-surface-subtle border border-border flex items-center justify-center text-muted-foreground group-hover:text-brand-cyan transition-colors">
             {icon}
           </div>
         )}
       </div>
 
-      <div className="mt-2.5 flex items-baseline justify-between">
-        <span className="text-2xl font-mono font-bold tracking-tight text-slate-50 tabular-nums">
+      <div className="mt-2 flex items-baseline justify-between gap-2">
+        <span className="text-2xl font-mono font-bold tracking-tight text-slate-100 tabular-nums">
           {value}
         </span>
         {badgeText && (
           <span className={cn(
-            'text-[10px] font-mono px-2 py-0.5 rounded border uppercase tracking-wide',
-            badgeVariant === 'error' && 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-            badgeVariant === 'warning' && 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-            badgeVariant === 'success' && 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-            badgeVariant === 'info' && 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-            badgeVariant === 'default' && 'bg-slate-800 text-slate-300 border-slate-700'
+            'text-[10px] font-mono px-2 py-0.5 rounded border uppercase tracking-wider font-semibold select-none',
+            badgeVariant === 'error' && 'bg-rose-500/10 text-rose-400 border-rose-500/25',
+            badgeVariant === 'warning' && 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+            badgeVariant === 'success' && 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+            badgeVariant === 'info' && 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/25',
+            badgeVariant === 'default' && 'bg-surface-elevated text-muted-foreground border-border'
           )}>
             {badgeText}
           </span>
@@ -111,14 +111,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </div>
 
       {(delta !== undefined || subValue) && (
-        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="mt-2.5 flex items-center justify-between text-xs text-muted-foreground">
           {delta !== undefined && (
             <div className="flex items-center gap-1">
               <span
                 className={cn(
                   'inline-flex items-center gap-0.5 font-mono font-medium',
                   neutralDelta
-                    ? 'text-slate-400'
+                    ? 'text-muted-foreground'
                     : isPositiveDelta
                     ? 'text-emerald-400'
                     : 'text-rose-400'
@@ -133,10 +133,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                 )}
                 {delta}
               </span>
-              {deltaLabel && <span className="text-slate-500">{deltaLabel}</span>}
+              {deltaLabel && <span className="text-muted-foreground/80">{deltaLabel}</span>}
             </div>
           )}
-          {subValue && <span className="font-mono text-slate-500">{subValue}</span>}
+          {subValue && <span className="font-mono text-muted-foreground/80">{subValue}</span>}
         </div>
       )}
     </Card>

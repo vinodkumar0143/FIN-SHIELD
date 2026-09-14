@@ -1,145 +1,149 @@
-import React, { useState } from 'react'
-import { Shield, Lock, Mail, Eye, EyeOff, ArrowRight, CheckCircle2, UserCheck, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, formatAuthError } from '@/contexts/AuthContext'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
+import { AuthBackground } from './AuthBackground'
 import { toast } from 'sonner'
 
 interface LoginPageProps {
   onNavigate: (path: string) => void
 }
 
-const DEMO_ACCOUNTS = [
-  {
-    role: 'ADMIN',
-    name: 'Dr. Evelyn Vance',
-    title: 'Chief Risk Officer & Admin',
-    email: 'admin@finshield.ai',
-    badge: 'error' as const
-  },
-  {
-    role: 'FINANCE_MANAGER',
-    name: 'Marcus Sterling',
-    title: 'Senior Finance Manager',
-    email: 'marcus.s@finshield.ai',
-    badge: 'warning' as const
-  },
-  {
-    role: 'FINANCE_ANALYST',
-    name: 'Sarah Chen',
-    title: 'Forensic Accounting Lead',
-    email: 'sarah.c@finshield.ai',
-    badge: 'info' as const
-  },
-  {
-    role: 'EMPLOYEE',
-    name: 'Ananya Roy',
-    title: 'Procurement Operations',
-    email: 'ananya.r@finshield.ai',
-    badge: 'neutral' as const
-  }
-]
-
 export function LoginPage({ onNavigate }: LoginPageProps) {
-  const { login, isAuthenticated } = useAuth()
+  const { login, loginWithOAuth, isAuthenticated } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // If already authenticated, redirect
-  React.useEffect(() => {
+  // Redirect if already authenticated
+  useEffect(() => {
     if (isAuthenticated) {
-      onNavigate('/dashboard')
+      onNavigate('/select-context')
     }
   }, [isAuthenticated, onNavigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSubmitting || isGoogleLoading) return
     setErrorMessage(null)
 
-    if (!email || !password) {
-      setErrorMessage('Please enter both email and password.')
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail || !password) {
+      setErrorMessage('Please enter both corporate email and password.')
+      return
+    }
+
+    // CASE A: Validate email format before calling Supabase authentication
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please enter a valid corporate email address.')
+      toast.error('Please enter a valid corporate email address.')
       return
     }
 
     setIsSubmitting(true)
-    const { error } = await login(email, password)
+    const { error } = await login(trimmedEmail, password)
     setIsSubmitting(false)
 
     if (error) {
-      console.error('[FIN-SHIELD] Login error:', error)
-      setErrorMessage(error.message || 'Invalid credentials or connection issue.')
-      toast.error('Authentication Failed: ' + (error.message || 'Invalid email or password'))
+      const userMessage = formatAuthError(error)
+      setErrorMessage(userMessage)
+      toast.error(userMessage)
     } else {
-      toast.success('Authenticated successfully. Welcome to FIN-SHIELD!')
-      onNavigate('/dashboard')
+      toast.success('Authenticated successfully. Please select your workspace.')
+      onNavigate('/select-context')
     }
   }
 
-  const fillDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail)
-    setPassword('FinShield2026!')
+  const handleGoogleAuth = async () => {
+    if (isSubmitting || isGoogleLoading) return
     setErrorMessage(null)
-    toast.info(`Filled credentials for ${demoEmail}`)
+    setIsGoogleLoading(true)
+
+    const { error } = await loginWithOAuth('google')
+    setIsGoogleLoading(false)
+
+    if (error) {
+      const userMessage = formatAuthError(error)
+      setErrorMessage(userMessage)
+      toast.error(userMessage)
+    }
   }
 
+  const isBusy = isSubmitting || isGoogleLoading
+
   return (
-    <div className="min-h-screen w-full bg-[#0B0F19] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative overflow-hidden">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -right-20 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+      <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-lg shadow-cyan-500/20 mb-2">
-            <Shield className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+        {/* FinShield Branding Header */}
+        <div className="text-center space-y-2.5">
+          <div className="flex justify-center">
+            <FinShieldLogo variant="compact" size="md" className="filter drop-shadow-[0_4px_16px_rgba(0,184,124,0.3)]" />
           </div>
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground font-mono">FIN-SHIELD</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-400 font-bold uppercase tracking-wider">
+            <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00B87C]/15 border border-[#00B87C]/30 text-[#00B87C] font-bold uppercase tracking-wider">
               ENTERPRISE
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Autonomous Financial Risk & Operations Intelligence
+          <p className="text-xs text-slate-400 font-medium">
+            Autonomous Financial Risk &amp; Operations Intelligence
           </p>
         </div>
 
-        {/* Login Card */}
-        <Card className="p-6 sm:p-8 bg-[#111827]/80 backdrop-blur-xl border-border/80 shadow-2xl space-y-6">
-          <div className="border-b border-border/50 pb-4">
-            <h2 className="text-lg font-bold text-foreground">Sign In to Sentinel Cockpit</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Enter your corporate credentials to access verified financial intelligence.
+        {/* Login Form Card */}
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
+          <div className="border-b border-slate-800 pb-3.5">
+            <h2 className="text-base font-semibold text-white">Sign In</h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Enter your corporate credentials to access FinShield.
             </p>
           </div>
 
           {errorMessage && (
-            <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <span>{errorMessage}</span>
+            <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex flex-col gap-2">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+              {errorMessage.includes('create an account') && (
+                <div className="pl-6">
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('/signup')}
+                    className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold inline-flex items-center gap-1 transition-colors"
+                  >
+                    Create Account Now →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} noValidate className="space-y-4">
             {/* Email Field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                Work Email
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Corporate Email
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="name@finshield.ai"
+                  placeholder="name@company.com"
                   required
-                  className="w-full h-10 pl-9 pr-3 rounded-md bg-secondary/30 border border-border focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-foreground placeholder:text-muted-foreground outline-none transition-all font-mono"
+                  disabled={isBusy}
+                  autoComplete="email"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
                 />
               </div>
             </div>
@@ -147,24 +151,36 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
             {/* Password Field */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Password
                 </label>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/forgot-password')}
+                  disabled={isBusy}
+                  className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
+                >
+                  Forgot Password?
+                </button>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="w-full h-10 pl-9 pr-10 rounded-md bg-secondary/30 border border-border focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-foreground placeholder:text-muted-foreground outline-none transition-all font-mono"
+                  disabled={isBusy}
+                  autoComplete="current-password"
+                  className="w-full h-10 pl-9 pr-10 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isBusy}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -174,58 +190,78 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full h-10 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs gap-2 transition-all shadow-md shadow-cyan-950"
+              disabled={isBusy}
+              className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2 transition-all shadow-md shadow-cyan-950/50"
             >
               {isSubmitting ? (
-                <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Authenticating...
+                </>
               ) : (
                 <>
-                  Authenticate & Launch
+                  Sign In
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </Button>
           </form>
 
-          {/* Signup Link */}
-          <div className="pt-3 border-t border-border/50 text-center text-xs text-muted-foreground">
-            Don't have an enterprise account?{' '}
+          {/* Social OAuth Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-800" />
+            </div>
+            <div className="relative flex justify-center text-[11px] uppercase">
+              <span className="bg-[#0F172A] px-2 text-slate-500 font-mono">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google OAuth Button - Full width */}
+          <div>
             <button
-              onClick={() => onNavigate('/signup')}
-              className="text-cyan-400 hover:underline font-semibold"
+              type="button"
+              onClick={handleGoogleAuth}
+              disabled={isBusy}
+              className="w-full h-10 px-4 rounded-md bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700 text-xs text-slate-200 font-medium flex items-center justify-center gap-2.5 transition-all hover:border-slate-600 disabled:opacity-60 shadow-sm"
             >
-              Register here
+              {isGoogleLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+              )}
+              Continue with Google
             </button>
           </div>
-        </Card>
 
-        {/* 1-Click Demo Profiles Switcher */}
-        <Card className="p-4 bg-[#111827]/60 border-border/60 space-y-3">
-          <div className="flex items-center gap-2">
-            <UserCheck className="w-4 h-4 text-cyan-400" />
-            <span className="text-xs font-bold text-foreground">1-Click Enterprise Test Accounts</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground">
-            Select a pre-seeded account to test role permissions directly:
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {DEMO_ACCOUNTS.map(acc => (
-              <button
-                key={acc.email}
-                type="button"
-                onClick={() => fillDemoAccount(acc.email)}
-                className="p-2.5 rounded-md bg-secondary/30 hover:bg-secondary/60 border border-border/50 hover:border-cyan-500/50 text-left transition-all group"
-              >
-                <div className="flex items-center justify-between gap-1 mb-1">
-                  <Badge variant={acc.badge} size="sm">{acc.role}</Badge>
-                  <CheckCircle2 className="w-3 h-3 text-muted-foreground group-hover:text-cyan-400 transition-colors" />
-                </div>
-                <div className="text-xs font-semibold text-foreground truncate">{acc.name}</div>
-                <div className="text-[10px] text-muted-foreground font-mono truncate">{acc.email}</div>
-              </button>
-            ))}
+          {/* Create Account Link */}
+          <div className="pt-3 border-t border-slate-800 text-center text-xs text-slate-400">
+            Don't have an enterprise account?{' '}
+            <button
+              type="button"
+              onClick={() => onNavigate('/signup')}
+              disabled={isBusy}
+              className="text-cyan-400 hover:text-cyan-300 hover:underline font-semibold transition-colors"
+            >
+              Create Account
+            </button>
           </div>
         </Card>
       </div>

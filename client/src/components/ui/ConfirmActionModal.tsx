@@ -109,26 +109,26 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
       <div className="space-y-4">
         {/* Entity context card */}
         {(entityId || entityName || amount || riskScore !== undefined) && (
-          <div className="p-3.5 rounded-md bg-[#0F131D] border border-slate-800 space-y-2">
+          <div className="p-3.5 rounded-lg bg-surface-subtle border border-border space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-mono text-slate-400 font-semibold">{entityId || 'Item Ref'}</span>
+              <span className="font-mono text-muted-foreground font-semibold">{entityId || 'Item Ref'}</span>
               {riskScore !== undefined && (
                 <RiskBadge score={riskScore} size="sm" />
               )}
             </div>
             {entityName && (
-              <div className="text-sm font-semibold text-slate-100">{entityName}</div>
+              <div className="text-sm font-semibold text-slate-100 font-sans">{entityName}</div>
             )}
             {amount && (
-              <div className="text-xs font-mono text-cyan-400">
-                Amount: <span className="text-slate-100 font-bold">{amount}</span>
+              <div className="text-xs font-mono text-brand-cyan font-medium">
+                Amount: <span className="text-slate-100 font-bold tabular-nums">{amount}</span>
               </div>
             )}
           </div>
         )}
 
         {/* Warning banner */}
-        <div className="flex items-start gap-3 p-3 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs">
           {config.icon}
           <div>
             <div className="font-semibold">{config.warning}</div>
@@ -138,8 +138,8 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
 
         {/* Justification input */}
         <div className="space-y-1.5">
-          <label className="text-xs font-mono text-slate-300 flex items-center gap-1.5">
-            <FileText className="h-3.5 w-3.5 text-cyan-400" />
+          <label className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-brand-cyan" />
             Compliance Rationale & Justification {requireReason && <span className="text-rose-400">*</span>}
           </label>
           <textarea
@@ -150,19 +150,19 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
             }}
             rows={3}
             placeholder="Enter reason for audit trail record..."
-            className="w-full rounded bg-[#0B0F19] border border-slate-700 p-2.5 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-sans"
+            className="w-full rounded-lg bg-surface-subtle border border-border p-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-cyan focus:border-brand-cyan transition-colors font-sans"
             disabled={isSubmitting}
             autoFocus
           />
           {error && (
-            <p className="text-[11px] text-rose-400 font-mono flex items-center gap-1">
+            <p className="text-[11px] text-rose-400 font-sans flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" /> {error}
             </p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
           <Button
             variant="ghost"
             size="sm"

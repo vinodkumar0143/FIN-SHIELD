@@ -197,18 +197,18 @@ export function RiskPage({ onNavigate }: RiskPageProps) {
               <AreaChart data={MOCK_RISK_VELOCITY_TREND} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
-                <XAxis dataKey="week" stroke="#6b7280" fontSize={11} tickLine={false} />
-                <YAxis domain={[0, 100]} stroke="#6b7280" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#16365C" vertical={false} />
+                <XAxis dataKey="week" stroke="#64748B" fontSize={11} tickLine={false} />
+                <YAxis domain={[0, 100]} stroke="#64748B" fontSize={11} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '8px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#0B1F3A', borderColor: '#16365C', borderRadius: '8px', fontSize: '11px', color: '#F7F9FC' }}
                   formatter={(val: any) => [`Score: ${val}/100`, 'Risk Index']}
                 />
-                <Area type="monotone" dataKey="overallScore" stroke="#f43f5e" strokeWidth={2.5} fillOpacity={1} fill="url(#riskGrad)" />
+                <Area type="monotone" dataKey="overallScore" stroke="#EF4444" strokeWidth={2.5} fillOpacity={1} fill="url(#riskGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

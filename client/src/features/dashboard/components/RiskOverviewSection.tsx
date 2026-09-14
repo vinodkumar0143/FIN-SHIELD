@@ -25,7 +25,7 @@ export const RiskOverviewSection: React.FC<{ onNavigateRisk?: () => void }> = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Overall Risk Score Card */}
-      <Card className="p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#111827] to-[#0D121F]">
+      <Card className="p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-[#0B1F3A] to-[#071322] border-[#16365C]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
@@ -50,7 +50,7 @@ export const RiskOverviewSection: React.FC<{ onNavigateRisk?: () => void }> = ({
         </div>
 
         {/* Delta & Explanation */}
-        <div className="space-y-2 border-t border-[#1E293B] pt-3">
+        <div className="space-y-2 border-t border-[#16365C] pt-3">
           <div className="flex items-center justify-between text-[11px] font-mono">
             <span className="text-orange-400 font-medium">{OVERALL_RISK.deltaText}</span>
             <span className="text-slate-500">Benchmark: 45</span>
@@ -119,7 +119,7 @@ export const RiskOverviewSection: React.FC<{ onNavigateRisk?: () => void }> = ({
         </div>
 
         {/* Recharts Mini Distribution Visualization */}
-        <div className="mt-4 pt-3 border-t border-[#1E293B]">
+        <div className="mt-4 pt-3 border-t border-[#16365C]">
           <div className="h-28 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -140,13 +140,13 @@ export const RiskOverviewSection: React.FC<{ onNavigateRisk?: () => void }> = ({
                 />
                 <RechartsTooltip
                   contentStyle={{
-                    backgroundColor: '#0F131D',
-                    borderColor: '#334155',
+                    backgroundColor: '#0B1F3A',
+                    borderColor: '#16365C',
                     borderRadius: '6px',
                     fontSize: '11px',
                     fontFamily: 'JetBrains Mono',
                   }}
-                  itemStyle={{ color: '#F8FAFC' }}
+                  itemStyle={{ color: '#F7F9FC' }}
                   formatter={(val: any, name: any) => [
                     name === 'count' ? `${val} Invoices` : formatCurrency(Number(val) || 0),
                     name === 'count' ? 'Count' : 'Exposure',
