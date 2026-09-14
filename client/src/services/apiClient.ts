@@ -22,6 +22,77 @@ async function getAuthHeader(): Promise<Record<string, string>> {
   return {}
 }
 
+async function parseResponse<T = any>(res: Response): Promise<T> {
+  const text = await res.text()
+  let parsed: any = null
+
+  if (text && text.trim().length > 0) {
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      // Body is not JSON (e.g. proxy HTML error or plain text)
+      parsed = null
+    }
+  }
+
+  // Handle HTTP error responses (!res.ok)
+  if (!res.ok) {
+    // 1. Structured JSON error
+    if (parsed && typeof parsed === 'object') {
+      const errMsg =
+        parsed.error?.message ||
+        parsed.message ||
+        (typeof parsed.error === 'string' ? parsed.error : null) ||
+        `Request failed with status ${res.status}`
+      const errCode =
+        parsed.error?.code ||
+        parsed.code ||
+        (typeof parsed.error === 'string' ? parsed.error : undefined)
+      throw new ApiError(errMsg, errCode, parsed.error?.details || parsed.details)
+    }
+
+    // 2. Gateway / Proxy connectivity errors (e.g. Vite proxy 502/504 when backend is offline)
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+      throw new ApiError(
+        'Unable to connect to the FinShield server. Please ensure the backend server is running.',
+        'SERVER_UNAVAILABLE',
+        { status: res.status }
+      )
+    }
+
+    // 3. Fallback for plain text or HTML error pages
+    const cleanText = text ? text.replace(/<[^>]*>?/gm, '').trim().slice(0, 200) : ''
+    throw new ApiError(
+      cleanText || `Request failed with status ${res.status}`,
+      `HTTP_${res.status}`
+    )
+  }
+
+  // Handle successful responses (200-299)
+  if (parsed && typeof parsed === 'object') {
+    if (parsed.success === false) {
+      const errMsg =
+        parsed.error?.message ||
+        parsed.message ||
+        (typeof parsed.error === 'string' ? parsed.error : null) ||
+        'Request failed'
+      throw new ApiError(errMsg, parsed.error?.code || parsed.code, parsed.error?.details)
+    }
+
+    // Prioritize specific payload keys
+    if (parsed.profile !== undefined) {
+      return parsed.profile
+    }
+    if (parsed.data !== undefined) {
+      return parsed.data
+    }
+    return parsed
+  }
+
+  // If response is empty or non-JSON but HTTP status was successful
+  return (parsed !== null ? parsed : (text as unknown)) as T
+}
+
 export const apiClient = {
   async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<T> {
     const authHeaders = await getAuthHeader()
@@ -47,16 +118,7 @@ export const apiClient = {
       }
     })
 
-    const json = await res.json()
-    if (!res.ok || json.success === false) {
-      throw new ApiError(
-        json.error?.message || `Request failed with status ${res.status}`,
-        json.error?.code,
-        json.error?.details
-      )
-    }
-
-    return json.data !== undefined ? json.data : json
+    return parseResponse<T>(res)
   },
 
   async post<T = any>(endpoint: string, body?: any): Promise<T> {
@@ -70,16 +132,7 @@ export const apiClient = {
       body: body ? JSON.stringify(body) : undefined
     })
 
-    const json = await res.json()
-    if (!res.ok || json.success === false) {
-      throw new ApiError(
-        json.error?.message || `Request failed with status ${res.status}`,
-        json.error?.code,
-        json.error?.details
-      )
-    }
-
-    return json.data !== undefined ? json.data : json
+    return parseResponse<T>(res)
   },
 
   async patch<T = any>(endpoint: string, body?: any): Promise<T> {
@@ -93,16 +146,7 @@ export const apiClient = {
       body: body ? JSON.stringify(body) : undefined
     })
 
-    const json = await res.json()
-    if (!res.ok || json.success === false) {
-      throw new ApiError(
-        json.error?.message || `Request failed with status ${res.status}`,
-        json.error?.code,
-        json.error?.details
-      )
-    }
-
-    return json.data !== undefined ? json.data : json
+    return parseResponse<T>(res)
   },
 
   async delete<T = any>(endpoint: string): Promise<T> {
@@ -115,16 +159,7 @@ export const apiClient = {
       }
     })
 
-    const json = await res.json()
-    if (!res.ok || json.success === false) {
-      throw new ApiError(
-        json.error?.message || `Request failed with status ${res.status}`,
-        json.error?.code,
-        json.error?.details
-      )
-    }
-
-    return json.data !== undefined ? json.data : json
+    return parseResponse<T>(res)
   },
 
   async upload<T = any>(endpoint: string, formData: FormData): Promise<T> {
@@ -138,15 +173,6 @@ export const apiClient = {
       body: formData
     })
 
-    const json = await res.json()
-    if (!res.ok || json.success === false) {
-      throw new ApiError(
-        json.error?.message || `Upload failed with status ${res.status}`,
-        json.error?.code,
-        json.error?.details
-      )
-    }
-
-    return json.data !== undefined ? json.data : json
+    return parseResponse<T>(res)
   }
 }

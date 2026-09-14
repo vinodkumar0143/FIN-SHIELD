@@ -397,6 +397,7 @@ export function createUsersRouter(): Router {
 
       res.json({
         success: true,
+        profile: updatedProfile,
         data: updatedProfile,
         message: 'Workspace context confirmed successfully'
       })
