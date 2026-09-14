@@ -60,7 +60,7 @@ export function getRiskTheme(levelOrScore: RiskLevel | number) {
       return {
         label: 'LOW RISK',
         level: 'LOW',
-        color: '#10B981',
+        color: '#00B87C',
         text: 'text-emerald-400',
         bg: 'bg-emerald-500/10',
         border: 'border-emerald-500/30',
@@ -70,6 +70,32 @@ export function getRiskTheme(levelOrScore: RiskLevel | number) {
       }
   }
 }
+
+export const FIN_COLORS = {
+  navy: '#0B1F3A',
+  navyDeep: '#061120',
+  navySurface: '#0E274A',
+  navyElevated: '#13335F',
+  green: '#00B87C',
+  gold: '#D4AF37',
+  cyan: '#0EA5E9',
+  neutral: '#F7F9FC',
+  neutralMuted: '#94A3B8',
+  danger: '#EF4444',
+  warning: '#F59E0B',
+  border: '#16365C',
+} as const
+
+export const CHART_PALETTE = {
+  primary: '#00B87C',   // Growth Green
+  cyan: '#0EA5E9',      // Technology Cyan
+  gold: '#D4AF37',      // Intelligence Gold
+  danger: '#EF4444',    // Risk Red
+  warning: '#F59E0B',   // Review Amber
+  muted: '#1E4675',     // Subdued Navy
+  grid: '#16365C',      // Border Grid
+  text: '#94A3B8',      // Muted Cool Gray
+} as const
 
 export function formatCurrency(amount: number, currency: string = 'INR'): string {
   if (currency === 'INR') {

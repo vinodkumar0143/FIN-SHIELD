@@ -125,18 +125,18 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
       <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* FinShield Branding Header */}
         <div className="text-center space-y-2.5">
           <div className="flex justify-center">
-            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
+            <FinShieldLogo variant="compact" size="md" />
           </div>
           <div className="flex items-center justify-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-400 font-bold uppercase tracking-wider">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00B87C]/15 border border-[#00B87C]/40 text-[#00B87C] font-bold uppercase tracking-wider">
               ENTERPRISE
             </span>
           </div>
@@ -146,8 +146,8 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
         </div>
 
         {/* Workspace Context Selection Card */}
-        <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
-          <div className="border-b border-slate-800 pb-3.5">
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
+          <div className="border-b border-[#16365C] pb-3.5">
             <h2 className="text-base font-semibold text-white">Select your FinShield workspace</h2>
             <p className="text-xs text-slate-400 mt-1">
               Choose your department and role to continue.
@@ -176,13 +176,13 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
                     setErrorMessage(null)
                   }}
                   disabled={isSubmitting}
-                  className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all disabled:opacity-60"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] text-xs text-white outline-none transition-all disabled:opacity-60"
                 >
-                  <option value="" disabled className="bg-slate-900 text-slate-500">
+                  <option value="" disabled className="bg-[#0B1F3A] text-slate-500">
                     [ Select Department ▼ ]
                   </option>
                   {DEPARTMENTS.map(dept => (
-                    <option key={dept} value={dept} className="bg-slate-900 text-white">
+                    <option key={dept} value={dept} className="bg-[#0B1F3A] text-white">
                       {dept}
                     </option>
                   ))}
@@ -204,13 +204,13 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
                     setErrorMessage(null)
                   }}
                   disabled={isSubmitting}
-                  className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all disabled:opacity-60"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] text-xs text-white outline-none transition-all disabled:opacity-60"
                 >
-                  <option value="" disabled className="bg-slate-900 text-slate-500">
+                  <option value="" disabled className="bg-[#0B1F3A] text-slate-500">
                     [ Select Role ▼ ]
                   </option>
                   {ROLES.map(r => (
-                    <option key={r.value} value={r.value} className="bg-slate-900 text-white">
+                    <option key={r.value} value={r.value} className="bg-[#0B1F3A] text-white">
                       {r.label}
                     </option>
                   ))}
@@ -222,7 +222,7 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2 mt-2 shadow-md shadow-cyan-950/50"
+              className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2 mt-2 shadow-md shadow-[#00B87C]/20"
             >
               {isSubmitting ? (
                 <>
@@ -239,7 +239,7 @@ export function SelectContextPage({ onNavigate }: SelectContextPageProps) {
           </form>
 
           {/* User Sign Out option */}
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="pt-3 border-t border-[#16365C] flex items-center justify-between text-xs text-slate-400">
             <span className="font-mono text-[11px] truncate max-w-[200px] text-slate-500">
               {user?.email}
             </span>

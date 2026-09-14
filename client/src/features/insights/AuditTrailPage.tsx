@@ -77,11 +77,11 @@ export function AuditTrailPage({ onNavigate: _ }: AuditTrailPageProps) {
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
               IMMUTABLE AUDIT LEDGER
             </span>
-            <span className="text-xs text-muted-foreground">Append-Only Cryptographic Log</span>
+            <span className="text-xs text-muted-foreground">Append-Only Audit Log</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Enterprise Audit Trail</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Tamper-evident record capturing every financial decision, system integration probe, role modification, and parameter change.
+            Append-only record capturing every financial decision, system integration probe, role modification, and parameter change.
           </p>
         </div>
 

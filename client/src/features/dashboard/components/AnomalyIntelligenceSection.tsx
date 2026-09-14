@@ -17,7 +17,7 @@ export const AnomalyIntelligenceSection: React.FC<{ onNavigateAlerts?: () => voi
   return (
     <Card className="p-5 flex flex-col justify-between">
       <div>
-        <div className="flex items-center justify-between pb-3 border-b border-[#1E293B]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#16365C]">
           <div>
             <h3 className="text-xs font-mono font-semibold uppercase text-slate-100 flex items-center gap-1.5">
               <Activity className="h-4 w-4 text-orange-400" />
@@ -31,7 +31,7 @@ export const AnomalyIntelligenceSection: React.FC<{ onNavigateAlerts?: () => voi
           {onNavigateAlerts && (
             <button
               onClick={onNavigateAlerts}
-              className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="text-[11px] font-mono text-[#00B87C] hover:text-[#009E6A] transition-colors"
             >
               Alert Rules →
             </button>
@@ -40,7 +40,7 @@ export const AnomalyIntelligenceSection: React.FC<{ onNavigateAlerts?: () => voi
 
         {/* 4 Summary Counters */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3.5">
-          <div className="p-2.5 rounded bg-[#0F131D] border border-[#1E293B]">
+          <div className="p-2.5 rounded bg-[#0B1F3A] border border-[#16365C]">
             <span className="text-[10px] font-mono text-slate-500 uppercase block">Total Flags</span>
             <span className="text-lg font-mono font-bold text-slate-100">{ANOMALY_SUMMARY.total}</span>
             <span className="text-[9px] font-mono text-slate-400 block mt-0.5">Rolling 30 days</span>
@@ -62,12 +62,12 @@ export const AnomalyIntelligenceSection: React.FC<{ onNavigateAlerts?: () => voi
             <span className="text-[9px] font-mono text-amber-300/80 block mt-0.5">Unreviewed</span>
           </div>
 
-          <div className="p-2.5 rounded bg-emerald-500/10 border border-emerald-500/30">
-            <span className="text-[10px] font-mono text-emerald-400 uppercase block flex items-center gap-1">
+          <div className="p-2.5 rounded bg-[#00B87C]/10 border border-[#00B87C]/30">
+            <span className="text-[10px] font-mono text-[#00B87C] uppercase block flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" /> Resolved
             </span>
-            <span className="text-lg font-mono font-bold text-emerald-400">{ANOMALY_SUMMARY.resolvedLast7d}</span>
-            <span className="text-[9px] font-mono text-emerald-300/80 block mt-0.5">Closed safely</span>
+            <span className="text-lg font-mono font-bold text-[#00B87C]">{ANOMALY_SUMMARY.resolvedLast7d}</span>
+            <span className="text-[9px] font-mono text-[#00B87C]/80 block mt-0.5">Closed safely</span>
           </div>
         </div>
 
@@ -92,13 +92,13 @@ export const AnomalyIntelligenceSection: React.FC<{ onNavigateAlerts?: () => voi
               />
               <RechartsTooltip
                 contentStyle={{
-                  backgroundColor: '#0F131D',
-                  borderColor: '#334155',
+                  backgroundColor: '#0B1F3A',
+                  borderColor: '#16365C',
                   borderRadius: '6px',
                   fontSize: '11px',
                   fontFamily: 'JetBrains Mono',
                 }}
-                itemStyle={{ color: '#F8FAFC' }}
+                itemStyle={{ color: '#F7F9FC' }}
               />
               <Line
                 type="monotone"
@@ -129,7 +129,7 @@ export const AnomalyIntelligenceSection: React.FC<{ onNavigateAlerts?: () => voi
         </div>
       </div>
 
-      <div className="mt-3 pt-2.5 border-t border-[#1E293B] flex items-center justify-between text-[10px] font-mono text-slate-500">
+      <div className="mt-3 pt-2.5 border-t border-[#16365C] flex items-center justify-between text-[10px] font-mono text-slate-500">
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1 text-rose-400">
             <span className="h-2 w-2 rounded-full bg-rose-500" /> Amount Outliers

@@ -61,14 +61,14 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
       <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* FinShield Branding Header */}
         <div className="text-center space-y-2.5">
           <div className="flex justify-center">
-            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
+            <FinShieldLogo variant="compact" size="md" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
           <p className="text-xs text-slate-400 font-medium">
@@ -77,8 +77,8 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
         </div>
 
         {/* Forgot Password Card */}
-        <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
-          <div className="border-b border-slate-800 pb-3.5">
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
+          <div className="border-b border-[#16365C] pb-3.5">
             <h2 className="text-base font-semibold text-white">Forgot Password</h2>
             <p className="text-xs text-slate-400 mt-1">
               Enter your corporate email address to receive a secure password reset link.
@@ -99,7 +99,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                 <div className="space-y-1">
                   <p className="font-semibold text-white">Reset Link Dispatched</p>
                   <p className="text-slate-300">
-                    If an account exists for <span className="text-cyan-400 font-mono">{email}</span>, we've sent a password reset link.
+                    If an account exists for <span className="text-[#00B87C] font-mono">{email}</span>, we've sent a password reset link.
                   </p>
                 </div>
               </div>
@@ -110,7 +110,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                   variant="outline"
                   disabled={isSubmitting || cooldown > 0}
                   onClick={handleSubmit}
-                  className="w-full h-10 border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-xs text-slate-200"
+                  className="w-full h-10 border-[#16365C] bg-[#071322]/80 hover:bg-[#0E274A] text-xs text-slate-200"
                 >
                   {isSubmitting ? (
                     <>
@@ -127,7 +127,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                 <Button
                   type="button"
                   onClick={() => onNavigate('/login')}
-                  className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2"
+                  className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back to Sign In
@@ -150,7 +150,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
                     required
                     disabled={isSubmitting}
                     autoComplete="email"
-                    className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
+                    className="w-full h-10 pl-9 pr-3 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] focus:ring-1 focus:ring-[#00B87C] text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
                   />
                 </div>
               </div>
@@ -158,7 +158,7 @@ export function ForgotPasswordPage({ onNavigate }: ForgotPasswordPageProps) {
               <Button
                 type="submit"
                 disabled={isSubmitting || cooldown > 0}
-                className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2 shadow-md shadow-cyan-950/50"
+                className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2 shadow-md shadow-[#00B87C]/20"
               >
                 {isSubmitting ? (
                   <>

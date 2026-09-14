@@ -78,28 +78,28 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
   const isBusy = isSubmitting || isGoogleLoading
 
   return (
-    <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
       <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* FinShield Branding Header */}
         <div className="text-center space-y-2.5">
           <div className="flex justify-center">
-            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
+            <FinShieldLogo variant="compact" size="md" className="filter drop-shadow-[0_4px_16px_rgba(0,184,124,0.3)]" />
           </div>
           <div className="flex items-center justify-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-400 font-bold uppercase tracking-wider">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00B87C]/15 border border-[#00B87C]/30 text-[#00B87C] font-bold uppercase tracking-wider">
               ENTERPRISE
             </span>
           </div>
           <p className="text-xs text-slate-400 font-medium">
-            Autonomous Financial Risk & Operations Intelligence
+            Autonomous Financial Risk &amp; Operations Intelligence
           </p>
         </div>
 
-        {/* Sign In Card */}
-        <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
+        {/* Login Form Card */}
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
           <div className="border-b border-slate-800 pb-3.5">
             <h2 className="text-base font-semibold text-white">Sign In</h2>
             <p className="text-xs text-slate-400 mt-1">

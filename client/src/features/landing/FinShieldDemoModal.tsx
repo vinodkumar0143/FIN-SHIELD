@@ -153,18 +153,18 @@ export const FinShieldDemoModal: React.FC<FinShieldDemoModalProps> = ({ isOpen, 
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#030712]/90 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-[#061120]/90 backdrop-blur-md transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Main Modal Container: 75–90% Viewport */}
-      <div className="relative w-full max-w-5xl rounded-2xl bg-[#080E1A] border border-slate-700/80 shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(6,182,212,0.15)] flex flex-col overflow-hidden z-10 my-auto text-slate-100 max-h-[92vh]">
+      <div className="relative w-full max-w-5xl rounded-2xl bg-[#0B1F3A] border border-[#16365C] shadow-[0_25px_60px_rgba(0,0,0,0.9),0_0_40px_rgba(0,184,124,0.12)] flex flex-col overflow-hidden z-10 my-auto text-[#F7F9FC] max-h-[92vh]">
         {/* 1. Top Header Bar */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-[#0A1122]/90 backdrop-blur">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#16365C] bg-[#071322]/90 backdrop-blur">
           <div className="flex items-center gap-3">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-800/80 text-cyan-400 text-[10px] font-mono font-bold uppercase tracking-wider">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#00B87C]/15 border border-[#00B87C]/40 text-[#00B87C] text-[10px] font-mono font-bold uppercase tracking-wider">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00B87C] animate-pulse" />
               FINSHIELD DEMO
             </div>
             <div>

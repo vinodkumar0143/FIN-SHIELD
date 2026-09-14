@@ -41,7 +41,7 @@ interface AnalyticsPageProps {
   onNavigate?: (path: string) => void
 }
 
-const PIE_COLORS = ['#06b6d4', '#10b981', '#6366f1', '#f59e0b', '#ec4899', '#8b5cf6']
+const PIE_COLORS = ['#00B87C', '#0EA5E9', '#D4AF37', '#F59E0B', '#3B82F6', '#64748B']
 
 export function AnalyticsPage({ onNavigate: _ }: AnalyticsPageProps) {
   const [loading, setLoading] = useState<boolean>(true)
@@ -172,12 +172,12 @@ export function AnalyticsPage({ onNavigate: _ }: AnalyticsPageProps) {
                   tickFormatter={val => `₹${val / 100000}L`}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '8px', fontSize: '11px' }}
+                  contentStyle={{ backgroundColor: '#0B1F3A', borderColor: '#16365C', borderRadius: '8px', fontSize: '11px', color: '#F7F9FC' }}
                   formatter={(val: any) => [formatCurrency(Number(val) || 0), '']}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                <Bar dataKey="revenue" fill="#10b981" name="Gross Revenue Inflows" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="spend" fill="#06b6d4" name="Operating Outflows" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="revenue" fill="#00B87C" name="Gross Revenue Inflows" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="spend" fill="#0EA5E9" name="Operating Outflows" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -211,10 +211,10 @@ export function AnalyticsPage({ onNavigate: _ }: AnalyticsPageProps) {
                   <XAxis dataKey="month" stroke="#6b7280" fontSize={11} tickLine={false} />
                   <YAxis domain={[0, 100]} stroke="#6b7280" fontSize={11} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '8px', fontSize: '11px' }}
+                    contentStyle={{ backgroundColor: '#0B1F3A', borderColor: '#16365C', borderRadius: '8px', fontSize: '11px', color: '#F7F9FC' }}
                     formatter={(val: any) => [`${val}/100`, 'Risk Score']}
                   />
-                  <Line type="monotone" dataKey="riskIndex" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4, fill: '#f43f5e' }} name="Risk Score" />
+                  <Line type="monotone" dataKey="riskIndex" stroke="#EF4444" strokeWidth={3} dot={{ r: 4, fill: '#EF4444' }} name="Risk Score" />
                 </LineChart>
               </ResponsiveContainer>
             ) : null}
@@ -254,7 +254,7 @@ export function AnalyticsPage({ onNavigate: _ }: AnalyticsPageProps) {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '8px', fontSize: '11px' }}
+                      contentStyle={{ backgroundColor: '#0B1F3A', borderColor: '#16365C', borderRadius: '8px', fontSize: '11px', color: '#F7F9FC' }}
                       formatter={(val: any) => [formatCurrency(Number(val) || 0), 'Outflow']}
                     />
                   </PieChart>

@@ -110,23 +110,23 @@ export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
   }, [onNavigate, refreshProfile, logout])
 
   return (
-    <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
       <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         <div className="text-center space-y-2.5">
           <div className="flex justify-center">
-            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
+            <FinShieldLogo variant="compact" size="md" />
           </div>
           <div className="flex items-center justify-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-400 font-bold uppercase tracking-wider">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00B87C]/15 border border-[#00B87C]/40 text-[#00B87C] font-bold uppercase tracking-wider">
               ENTERPRISE AUTH
             </span>
           </div>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
           {errorMsg ? (
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-rose-950/40 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-3">
@@ -140,7 +140,7 @@ export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
               <Button
                 type="button"
                 onClick={() => onNavigate('/login')}
-                className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2"
+                className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Sign In
@@ -148,7 +148,7 @@ export function AuthCallbackPage({ onNavigate }: AuthCallbackPageProps) {
             </div>
           ) : (
             <div className="py-8 flex flex-col items-center justify-center space-y-3">
-              <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#00B87C]" />
               <p className="text-xs text-slate-300 font-medium">
                 Completing enterprise Google authentication...
               </p>

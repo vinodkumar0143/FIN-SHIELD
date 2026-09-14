@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Shield, Building, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
+import { Building, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth, formatAuthError } from '@/contexts/AuthContext'
+import { FinShieldLogo } from '@/components/ui/FinShieldLogo'
 import type { UserRole } from '@/lib/permissions'
 import { AuthBackground } from './AuthBackground'
 import { toast } from 'sonner'
@@ -73,24 +74,24 @@ export function ProfileCompletionPage({ onNavigate }: ProfileCompletionPageProps
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
       <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* Branding */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 shadow-lg shadow-cyan-950/40 mb-1">
-            <Shield className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+          <div className="flex justify-center mb-1">
+            <FinShieldLogo variant="compact" size="md" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FIN-SHIELD</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
           <p className="text-xs text-slate-400 font-medium">
             Organizational Assignment
           </p>
         </div>
 
         {/* Profile Completion Card */}
-        <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
-          <div className="border-b border-slate-800 pb-3.5">
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
+          <div className="border-b border-[#16365C] pb-3.5">
             <h2 className="text-base font-semibold text-white">Complete Profile</h2>
             <p className="text-xs text-slate-400 mt-1">
               Select your department and operational role to configure your FinShield access.
@@ -115,10 +116,10 @@ export function ProfileCompletionPage({ onNavigate }: ProfileCompletionPageProps
                   value={department}
                   onChange={e => setDepartment(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all disabled:opacity-60"
+                  className="w-full h-10 pl-9 pr-3 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] text-xs text-white outline-none transition-all disabled:opacity-60"
                 >
                   {DEPARTMENTS.map(dept => (
-                    <option key={dept} value={dept} className="bg-slate-900 text-white">
+                    <option key={dept} value={dept} className="bg-[#0B1F3A] text-white">
                       {dept}
                     </option>
                   ))}
@@ -134,10 +135,10 @@ export function ProfileCompletionPage({ onNavigate }: ProfileCompletionPageProps
                 value={role}
                 onChange={e => setRole(e.target.value as UserRole)}
                 disabled={isSubmitting}
-                className="w-full h-10 px-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 text-xs text-white outline-none transition-all disabled:opacity-60"
+                className="w-full h-10 px-3 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] text-xs text-white outline-none transition-all disabled:opacity-60"
               >
                 {ROLES.map(r => (
-                  <option key={r.value} value={r.value} className="bg-slate-900 text-white">
+                  <option key={r.value} value={r.value} className="bg-[#0B1F3A] text-white">
                     {r.label}
                   </option>
                 ))}
@@ -147,7 +148,7 @@ export function ProfileCompletionPage({ onNavigate }: ProfileCompletionPageProps
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2 mt-2 shadow-md shadow-cyan-950/50"
+              className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2 mt-2 shadow-md shadow-[#00B87C]/20"
             >
               {isSubmitting ? (
                 <>

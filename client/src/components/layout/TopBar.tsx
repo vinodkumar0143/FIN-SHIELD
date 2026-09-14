@@ -105,7 +105,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       <div className="flex items-center gap-2.5 flex-shrink-0">
         {/* Compact System Status Indicator */}
         <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-surface border border-border text-[11px] font-mono">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+          <ShieldCheck className="h-3.5 w-3.5 text-[#00B87C]" />
           <span className="text-muted-foreground">Ledger:</span>
           <span className="text-slate-200 font-medium">Protected</span>
         </div>

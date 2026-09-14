@@ -4,34 +4,53 @@
 
 @layer base {
   :root {
-    /* Base canvas & foreground (HSL for opacity modifiers: bg-card/60, border-border/80) */
-    --background: 222 47% 6%;          /* #080C14 - Deep financial charcoal navy */
-    --foreground: 210 40% 98%;         /* #F8FAFC - Crisp primary text */
+    /* FinShield Brand Tokens */
+    --fin-navy: #0B1F3A;
+    --fin-navy-deep: #061120;
+    --fin-navy-surface: #0B1F3A;
+    --fin-navy-elevated: #0E274A;
+    --fin-navy-highlight: #13335F;
+    --fin-green: #00B87C;
+    --fin-green-hover: #009E6A;
+    --fin-green-subtle: rgba(0, 184, 124, 0.12);
+    --fin-gold: #D4AF37;
+    --fin-gold-hover: #B8972E;
+    --fin-gold-subtle: rgba(212, 175, 55, 0.12);
+    --fin-neutral: #F7F9FC;
+    --fin-neutral-muted: #94A3B8;
+    --fin-cyan: #0EA5E9;
+    --fin-cyan-subtle: rgba(14, 165, 233, 0.12);
+    --fin-danger: #EF4444;
+    --fin-warning: #F59E0B;
 
-    --card: 222 40% 10%;               /* #0F1523 - Primary surface */
-    --card-foreground: 210 40% 98%;    /* #F8FAFC */
+    /* Base canvas & foreground (HSL for alpha modifiers) */
+    --background: 216 75% 7%;          /* #061120 - FinShield Deepest Navy canvas */
+    --foreground: 210 40% 98%;         /* #F7F9FC - Clean modern neutral text */
 
-    --popover: 222 38% 15%;            /* #172033 - Elevated surface */
+    --card: 214 68% 14%;               /* #0B1F3A - FinShield Primary Navy Surface */
+    --card-foreground: 210 40% 98%;    /* #F7F9FC */
+
+    --popover: 214 68% 17%;            /* #0E274A - Elevated Navy Surface */
     --popover-foreground: 210 40% 98%;
 
-    --primary: 199 89% 48%;            /* #0EA5E9 - Disciplined financial cyan */
-    --primary-foreground: 222 47% 6%;  /* #080C14 */
+    --primary: 160 100% 36%;           /* #00B87C - FinShield Growth Green */
+    --primary-foreground: 216 75% 7%;  /* #061120 - Dark contrast text */
 
-    --secondary: 222 32% 16%;          /* #1C263A - Subtle interactive */
-    --secondary-foreground: 210 40% 95%;
+    --secondary: 214 68% 17%;          /* #0E274A - Subtle interactive navy */
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 24% 18%;              /* #232C3E */
-    --muted-foreground: 215 16% 65%;   /* #94A3B8 */
+    --muted: 215 67% 12%;              /* #0A1C35 - Subdued Navy */
+    --muted-foreground: 215 16% 65%;   /* #94A3B8 - Muted cool gray */
 
-    --accent: 222 36% 16%;             /* #1A2437 */
+    --accent: 215 67% 22%;             /* #13335F - Highlight Navy */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84% 60%;          /* #EF4444 - Crimson High Risk */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 33% 16%;             /* #1B2436 - Subtle 1px boundary */
-    --input: 220 33% 16%;              /* #1B2436 */
-    --ring: 199 89% 48%;               /* #0EA5E9 */
+    --border: 213 61% 22%;             /* #16365C - Disciplined Navy/Cyan Border */
+    --input: 213 61% 22%;              /* #16365C */
+    --ring: 160 100% 36%;              /* #00B87C - Growth Green Focus Ring */
     --radius: 0.625rem;                /* 10px rounded enterprise radius */
   }
 
@@ -41,8 +60,8 @@
   }
 
   body {
-    background-color: #080C14;
-    color: #F8FAFC;
+    background-color: #061120;
+    color: #F7F9FC;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -51,7 +70,7 @@
 
   /* Accessible keyboard focus outlines */
   :focus-visible {
-    outline: 2px solid #0EA5E9 !important;
+    outline: 2px solid #00B87C !important;
     outline-offset: 2px !important;
   }
 
@@ -68,11 +87,23 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+  .text-glow-green {
+    text-shadow: 0 0 10px rgba(0, 184, 124, 0.4);
+  }
+  .text-glow-gold {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  }
   .text-glow-cyan {
     text-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
   }
   .text-glow-critical {
     text-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
+  }
+  .border-glow-green {
+    box-shadow: 0 0 12px rgba(0, 184, 124, 0.2);
+  }
+  .border-glow-gold {
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
   }
   .border-glow-cyan {
     box-shadow: 0 0 10px rgba(14, 165, 233, 0.15);
@@ -83,8 +114,8 @@
   .bg-grid-pattern {
     background-size: 24px 24px;
     background-image: 
-      linear-gradient(to right, rgba(27, 36, 54, 0.25) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(27, 36, 54, 0.25) 1px, transparent 1px);
+      linear-gradient(to right, rgba(22, 54, 92, 0.35) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(22, 54, 92, 0.35) 1px, transparent 1px);
   }
 }
 
@@ -94,14 +125,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080C14;
+  background: #061120;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1B2436;
+  background: #16365C;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2A374F;
+  background: #1E4675;
 }
 
 /* Reduced motion preference */

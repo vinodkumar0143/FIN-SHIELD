@@ -312,22 +312,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className={cn(
           'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-colors duration-150 relative text-left select-none',
           isActive
-            ? 'bg-brand-cyan/10 text-slate-100 font-medium border-l-2 border-brand-cyan'
-            : 'text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight/60',
+            ? 'bg-[#00B87C]/10 text-[#F7F9FC] font-medium border-l-2 border-[#00B87C]'
+            : 'text-muted-foreground hover:text-[#F7F9FC] hover:bg-[#0E274A]',
           collapsed && 'justify-center px-2'
         )}
       >
         <span
           className={cn(
             'flex-shrink-0 transition-colors',
-            isActive ? 'text-brand-cyan' : 'text-muted-foreground'
+            isActive ? 'text-[#00B87C]' : 'text-muted-foreground group-hover:text-slate-100'
           )}
         >
           {item.icon}
         </span>
 
         {!collapsed && (
-          <span className="truncate flex-1 font-sans">
+          <span className="truncate flex-1 font-medium">
             {item.label}
           </span>
         )}
@@ -335,10 +335,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!collapsed && item.badge && (
           <span
             className={cn(
-              'px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold',
-              item.badgeVariant === 'error' && 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
-              item.badgeVariant === 'warning' && 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-              (!item.badgeVariant || item.badgeVariant === 'default') && 'bg-surface-elevated text-muted-foreground border border-border'
+              'px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold ml-auto',
+              item.badgeVariant === 'error' && 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
+              item.badgeVariant === 'warning' && 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+              item.badgeVariant === 'info' && 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30',
+              (!item.badgeVariant || item.badgeVariant === 'default') && 'bg-surface-elevated text-slate-300 border border-border'
             )}
           >
             {item.badge}
@@ -367,7 +368,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <FinShieldLogo
             variant="compact"
             size="sm"
-            className="group-hover:border-cyan-500/60 transition-colors shrink-0"
+            className="shrink-0 transition-transform duration-200 group-hover:scale-105"
           />
           {!collapsed && (
             <div className="flex flex-col">

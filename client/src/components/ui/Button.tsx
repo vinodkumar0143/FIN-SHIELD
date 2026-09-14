@@ -3,26 +3,28 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 select-none text-xs tracking-wide cursor-pointer font-sans',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00B87C] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 select-none text-xs tracking-wide cursor-pointer font-sans',
   {
     variants: {
       variant: {
         default:
-          'bg-brand-cyan text-slate-950 font-semibold hover:bg-brand-cyan-hover active:scale-[0.98] shadow-subtle',
+          'bg-[#00B87C] text-[#061120] font-semibold hover:bg-[#009E6A] active:scale-[0.98] shadow-subtle',
         primary:
-          'bg-brand-cyan text-slate-950 font-semibold hover:bg-brand-cyan-hover active:scale-[0.98] shadow-subtle',
+          'bg-[#00B87C] text-[#061120] font-semibold hover:bg-[#009E6A] active:scale-[0.98] shadow-subtle',
         secondary:
-          'bg-surface-elevated text-slate-100 border border-border hover:bg-surface-highlight hover:border-border-elevated active:scale-[0.98]',
+          'bg-[#0B1F3A] text-[#F7F9FC] border border-[#16365C] hover:bg-[#0E274A] hover:border-[#1E4675] active:scale-[0.98]',
         outline:
-          'border border-border bg-transparent text-slate-200 hover:bg-surface hover:text-slate-100 hover:border-border-elevated active:scale-[0.98]',
+          'border border-[#16365C] bg-transparent text-[#F7F9FC] hover:bg-[#0B1F3A] hover:text-[#F7F9FC] hover:border-[#1E4675] active:scale-[0.98]',
         ghost:
-          'bg-transparent text-muted-foreground hover:text-slate-100 hover:bg-surface-highlight active:scale-[0.98]',
+          'bg-transparent text-muted-foreground hover:text-[#F7F9FC] hover:bg-[#0E274A] active:scale-[0.98]',
+        gold:
+          'bg-[#D4AF37] text-[#061120] font-semibold hover:bg-[#B8972E] active:scale-[0.98] shadow-subtle',
         danger:
           'bg-rose-600 text-white font-semibold hover:bg-rose-500 active:scale-[0.98]',
         dangerOutline:
           'border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/50 active:scale-[0.98]',
         cyber:
-          'bg-surface-elevated text-brand-cyan border border-brand-cyan/30 hover:bg-surface-highlight hover:border-brand-cyan/50 active:scale-[0.98]',
+          'bg-[#0E274A] text-[#00B87C] border border-[#00B87C]/40 hover:bg-[#13335F] hover:border-[#00B87C] active:scale-[0.98]',
       },
       size: {
         sm: 'h-7 px-2.5 text-[11px]',

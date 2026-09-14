@@ -43,23 +43,48 @@ export default {
         },
         border: {
           DEFAULT: 'hsl(var(--border) / <alpha-value>)',
-          muted: '#141C2B',
-          elevated: '#2A374F',
-          active: '#0EA5E9',
+          muted: '#102B4E',
+          elevated: '#16365C',
+          active: '#00B87C',
+          gold: '#D4AF37',
         },
         input: 'hsl(var(--input) / <alpha-value>)',
         ring: 'hsl(var(--ring) / <alpha-value>)',
 
-        // Enterprise Financial Surface Hierarchy
+        // FinShield Core Brand Tokens
+        fin: {
+          navy: '#0B1F3A',
+          'navy-deep': '#061120',
+          'navy-surface': '#0B1F3A',
+          'navy-elevated': '#0E274A',
+          'navy-highlight': '#13335F',
+          green: '#00B87C',
+          'green-hover': '#009E6A',
+          'green-subtle': 'rgba(0, 184, 124, 0.12)',
+          gold: '#D4AF37',
+          'gold-hover': '#B8972E',
+          'gold-subtle': 'rgba(212, 175, 55, 0.12)',
+          neutral: '#F7F9FC',
+          'neutral-muted': '#94A3B8',
+          cyan: '#0EA5E9',
+          'cyan-subtle': 'rgba(14, 165, 233, 0.12)',
+          danger: '#EF4444',
+          warning: '#F59E0B',
+        },
+
+        // Enterprise Financial Surface Hierarchy (Derived from #0B1F3A)
         surface: {
-          DEFAULT: '#0F1523',
-          subtle: '#0B101D',
-          elevated: '#172033',
-          highlight: '#1C263C',
+          DEFAULT: '#0B1F3A',       // Primary Navy
+          subtle: '#061120',        // Deepest Canvas Navy
+          elevated: '#0E274A',      // Elevated Navy
+          highlight: '#13335F',     // Interactive Highlight Navy
         },
 
         // Restrained Financial Brand Accents
         brand: {
+          navy: '#0B1F3A',
+          green: '#00B87C',
+          gold: '#D4AF37',
           cyan: '#0EA5E9',
           'cyan-bright': '#38BDF8',
           'cyan-hover': '#0284C7',
@@ -71,10 +96,10 @@ export default {
         // Financial Risk Semantics (Low: 0-39, Medium: 40-69, High: 70-100)
         risk: {
           low: {
-            DEFAULT: '#10B981',
-            bg: 'rgba(16, 185, 129, 0.08)',
-            border: 'rgba(16, 185, 129, 0.25)',
-            text: '#34D399',
+            DEFAULT: '#00B87C',
+            bg: 'rgba(0, 184, 124, 0.08)',
+            border: 'rgba(0, 184, 124, 0.25)',
+            text: '#00B87C',
           },
           medium: {
             DEFAULT: '#F59E0B',
@@ -98,10 +123,11 @@ export default {
 
         // Clean Status Indicators
         semantic: {
-          success: '#10B981',
+          success: '#00B87C',
           warning: '#F59E0B',
           error: '#EF4444',
           info: '#0EA5E9',
+          gold: '#D4AF37',
           neutral: '#94A3B8',
         },
       },
@@ -129,6 +155,8 @@ export default {
         panel: '0 2px 10px -1px rgba(0, 0, 0, 0.4), 0 1px 3px -1px rgba(0, 0, 0, 0.3)',
         elevated: '0 8px 24px -4px rgba(0, 0, 0, 0.5)',
         command: '0 16px 36px -6px rgba(0, 0, 0, 0.65), 0 4px 12px -2px rgba(0, 0, 0, 0.4)',
+        'glow-green': '0 0 14px rgba(0, 184, 124, 0.22)',
+        'glow-gold': '0 0 14px rgba(212, 175, 55, 0.22)',
         'glow-cyan': '0 0 12px rgba(14, 165, 233, 0.18)',
         'glow-indigo': '0 0 12px rgba(99, 102, 241, 0.18)',
         'glow-critical': '0 0 12px rgba(239, 68, 68, 0.20)',

@@ -86,14 +86,14 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#070B14] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
+    <div className="min-h-screen w-full bg-[#061120] text-foreground flex flex-col justify-center items-center p-4 sm:p-6 relative">
       <AuthBackground />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* Branding */}
         <div className="text-center space-y-2.5">
           <div className="flex justify-center">
-            <FinShieldLogo variant="compact" size="md" className="shadow-lg shadow-cyan-950/50 border-cyan-800/60" />
+            <FinShieldLogo variant="compact" size="md" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white font-mono">FinShield</h1>
           <p className="text-xs text-slate-400 font-medium">
@@ -101,8 +101,8 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-[#0F172A]/90 backdrop-blur-xl border-slate-800 shadow-2xl space-y-5">
-          <div className="border-b border-slate-800 pb-3.5">
+        <Card className="p-6 sm:p-8 bg-[#0B1F3A]/90 backdrop-blur-xl border-[#16365C] shadow-2xl space-y-5">
+          <div className="border-b border-[#16365C] pb-3.5">
             <h2 className="text-base font-semibold text-white">Reset Password</h2>
             <p className="text-xs text-slate-400 mt-1">
               Specify a strong, secure new password for your operator account.
@@ -111,7 +111,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
 
           {checkingSession ? (
             <div className="py-8 flex flex-col items-center justify-center space-y-3">
-              <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#00B87C]" />
               <p className="text-xs text-slate-400">Verifying security token...</p>
             </div>
           ) : !hasValidSession ? (
@@ -130,7 +130,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                 <Button
                   type="button"
                   onClick={() => onNavigate('/forgot-password')}
-                  className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2"
+                  className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2"
                 >
                   Request New Link
                 </Button>
@@ -138,7 +138,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                   type="button"
                   variant="outline"
                   onClick={() => onNavigate('/login')}
-                  className="w-full h-10 border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-xs text-slate-200"
+                  className="w-full h-10 border-[#16365C] bg-[#071322]/80 hover:bg-[#0E274A] text-xs text-slate-200"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to Sign In
                 </Button>
@@ -159,7 +159,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
               <Button
                 type="button"
                 onClick={() => onNavigate('/login')}
-                className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2"
+                className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2 shadow-md shadow-[#00B87C]/20"
               >
                 Sign In Now
                 <ArrowRight className="w-4 h-4" />
@@ -189,7 +189,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                       required
                       disabled={isSubmitting}
                       autoComplete="new-password"
-                      className="w-full h-10 pl-9 pr-10 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
+                      className="w-full h-10 pl-9 pr-10 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] focus:ring-1 focus:ring-[#00B87C] text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
                     />
                     <button
                       type="button"
@@ -217,7 +217,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                       required
                       disabled={isSubmitting}
                       autoComplete="new-password"
-                      className="w-full h-10 pl-9 pr-3 rounded-md bg-slate-900/80 border border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
+                      className="w-full h-10 pl-9 pr-3 rounded-md bg-[#071322]/80 border border-[#16365C] focus:border-[#00B87C] focus:ring-1 focus:ring-[#00B87C] text-xs text-white placeholder:text-slate-500 outline-none transition-all font-mono disabled:opacity-60"
                     />
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export function ResetPasswordPage({ onNavigate }: ResetPasswordPageProps) {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-10 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs gap-2 shadow-md shadow-cyan-950/50"
+                  className="w-full h-10 bg-[#00B87C] hover:bg-[#009E6A] text-[#061120] font-bold text-xs gap-2 shadow-md shadow-[#00B87C]/20"
                 >
                   {isSubmitting ? (
                     <>
